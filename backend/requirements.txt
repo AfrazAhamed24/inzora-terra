@@ -1,0 +1,7 @@
+# Inzora Terra OS — backend runtime dependencies
+pydantic>=2.0
+pydantic-settings>=2.0
+openai>=1.0
+
+# Inzora Terra OS — backend dev/test dependencies
+pytest>=8.0

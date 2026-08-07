@@ -1,0 +1,36 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "groq/llama-3.3-70b-versatile",
+  "instructions": ["AGENTS.md", "docs/DESIGN.md", "MEMORY.md"],
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "agent": {
+    "risk-assessment": {
+      "mode": "subagent",
+      "description": "Evaluates structural risk from sensor data",
+      "model": "groq/llama-3.3-70b-versatile"
+    },
+    "victim-localization": {
+      "mode": "subagent",
+      "description": "Locates victims using thermal/GPR/witness data",
+      "model": "groq/llama-3.3-70b-versatile"
+    },
+    "resource-coordination": {
+      "mode": "subagent",
+      "description": "Allocates teams and equipment",
+      "model": "groq/llama-3.3-70b-versatile"
+    },
+    "knowledge-retrieval": {
+      "mode": "subagent",
+      "description": "Queries SOPs, building codes, historical incidents",
+      "model": "groq/llama-3.3-70b-versatile"
+    },
+    "orchestrator": {
+      "mode": "primary",
+      "description": "Coordinates all agents, produces unified output",
+      "model": "groq/llama-3.3-70b-versatile"
+    }
+  }
+}
