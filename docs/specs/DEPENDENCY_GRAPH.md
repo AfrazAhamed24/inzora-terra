@@ -13,10 +13,14 @@ GraphExecutor consumes.
 
 ## 2. Why a Graph (not a sequence)
 
-- **Risk Assessment and Victim Localization are independent** — parallelizing them cuts wall-clock
-  time on first intelligence.
-- **Resource Coordination and Knowledge Retrieval both depend on Risk + Victim outputs** — they
-  cannot start until L1 settles, but they do not depend on each other.
+- **Report handoff is explicit.** Each specialist consumes the previous agent's report, so the
+  pipeline is a **strict sequential chain**: risk → victim → resource → knowledge → rescue →
+  briefing. Every edge declares *what* is handed off and *why*.
+- **Victim search is driven by risk** (L1 → L2): the Risk Assessment report prioritizes victim
+  zones before the Victim agent runs.
+- **Resource allocation is driven by the victim map** (L2 → L3), **knowledge is scoped by the
+  resource plan** (L3 → L4), and **rescue guidance is the final field handoff** (L4 → L5) — each
+  report compounds the previous one.
 - **Streaming-telemetry philosophy** (BLUEPRINT v1.1): later phases re-trigger the graph on new
   telemetry, which requires explicit dependency edges rather than a hardcoded loop.
 - A graph makes the pipeline **inspectable, schedulable, and re-triggerable** by the orchestrator
@@ -29,42 +33,46 @@ GraphExecutor consumes.
 | Node                  | Produces (writes)            | Consumes (reads)                      | Level |
 |-----------------------|------------------------------|----------------------------------------|-------|
 | `risk_assessment`     | `risk_report`                | telemetry, environment, evidence       | L1    |
-| `victim_localization` | `victim_map`                 | telemetry, environment, evidence       | L1    |
-| `resource_coordination`| `resource_allocation`, tasks| `risk_report`, `victim_map`, tasks     | L2    |
-| `knowledge_retrieval` | `knowledge_results`          | `risk_report`, `victim_map`, building  | L2    |
-| `briefing_generator`  | `summary`                    | all owned reports, confidence_scores   | L3    |
+| `victim_localization` | `victim_map`                 | `risk_report`, telemetry, environment, evidence | L2 |
+| `resource_coordination`| `resource_allocation`, tasks| `victim_map`, `risk_report`, tasks     | L3    |
+| `knowledge_retrieval` | `knowledge_results`          | `resource_allocation`, `risk_report`, `victim_map`, building | L4 |
+| `rescue_coordination` | `rescue_guidance`, tasks     | `risk_report`, `victim_map`, `resource_allocation`, `knowledge_results` | L5 |
+| `briefing_generator`  | `summary`                    | all owned reports, confidence_scores   | L6    |
 
-### 3.2 Edges (dependencies)
+### 3.2 Edges (dependencies) — the sequential chain
 
 ```
-risk_assessment ────────► resource_coordination
+risk_assessment ────────► victim_localization
 victim_localization ────► resource_coordination
-risk_assessment ────────► knowledge_retrieval
-victim_localization ────► knowledge_retrieval
-resource_coordination ──► briefing_generator
-knowledge_retrieval ───► briefing_generator
+resource_coordination ──► knowledge_retrieval
+knowledge_retrieval ────► rescue_coordination
+rescue_coordination ────► briefing_generator
 ```
 
-### 3.3 Dependency rationale
+### 3.3 Dependency rationale (report handoff)
 
-| Edge                                   | Rationale                                                      |
-|----------------------------------------|----------------------------------------------------------------|
-| risk → resource                        | Resource allocation must know risk level to pick secure/rescue teams |
-| victim → resource                      | Teams are assigned to HIGH-probability victim zones            |
-| risk → knowledge                       | Knowledge Retrieval filters SOPs/codes by risk level & hazards |
-| victim → knowledge                     | Recommendations prioritize high-probability zones              |
-| resource, knowledge → briefing         | Briefing aggregates both L2 outputs                            |
+| Edge                         | What is handed off                                        |
+|------------------------------|-----------------------------------------------------------|
+| risk → victim                | Risk level drives search prioritization (risk context lands in the victim map) |
+| victim → resource            | Victim zones determine team deployment                     |
+| resource → knowledge         | The allocation plan scopes which SOPs/codes are relevant   |
+| knowledge → rescue           | SOP/code recommendations shape the extraction guidance     |
+| rescue → briefing            | The field handoff is the final input to the mission summary |
 
 ### 3.4 Levels (topological layers)
 
-| Level | Nodes                            | Ready when                       |
-|-------|----------------------------------|----------------------------------|
-| L1    | risk_assessment, victim_localization | evidence ingested             |
-| L2    | resource_coordination, knowledge_retrieval | **all** L1 complete   |
-| L3    | briefing_generator               | **all** L2 complete              |
+| Level | Node                     | Ready when                    |
+|-------|--------------------------|-------------------------------|
+| L1    | risk_assessment          | evidence ingested             |
+| L2    | victim_localization      | risk report complete          |
+| L3    | resource_coordination    | victim map complete           |
+| L4    | knowledge_retrieval      | resource allocation complete  |
+| L5    | rescue_coordination      | knowledge results complete    |
+| L6    | briefing_generator       | rescue guidance complete      |
 
-All nodes in a level run concurrently (ORCHESTRATOR.md §4.2). A level fires only when **every**
-node in the previous level completed successfully (after retries/fallbacks).
+One node per level: the pipeline is strictly sequential, so each agent's report is written and
+committed before the next agent starts. A level fires only when the previous level completed
+successfully (after retries/fallbacks).
 
 ## 4. Formal Properties
 
@@ -87,18 +95,18 @@ The graph is expressed **declaratively** so the executor is generic (no per-miss
 ```
 nodes:
   risk_assessment:       { level: 1, reads: [telemetry, environment, evidence], writes: [risk_report] }
-  victim_localization:   { level: 1, reads: [telemetry, environment, evidence], writes: [victim_map] }
-  resource_coordination: { level: 2, reads: [risk_report, victim_map, tasks], writes: [resource_allocation, tasks] }
-  knowledge_retrieval:   { level: 2, reads: [risk_report, victim_map, building], writes: [knowledge_results] }
-  briefing_generator:    { level: 3, reads: [*], writes: [summary] }
+  victim_localization:   { level: 2, reads: [risk_report, telemetry, environment, evidence], writes: [victim_map] }
+  resource_coordination: { level: 3, reads: [victim_map, risk_report, tasks], writes: [resource_allocation, tasks] }
+  knowledge_retrieval:   { level: 4, reads: [resource_allocation, risk_report, victim_map, building], writes: [knowledge_results] }
+  rescue_coordination:   { level: 5, reads: [risk_report, victim_map, resource_allocation, knowledge_results], writes: [rescue_guidance, tasks] }
+  briefing_generator:    { level: 6, reads: [*], writes: [summary] }
 
 edges:
-  risk_assessment        -> resource_coordination
+  risk_assessment        -> victim_localization
   victim_localization    -> resource_coordination
-  risk_assessment        -> knowledge_retrieval
-  victim_localization    -> knowledge_retrieval
-  resource_coordination  -> briefing_generator
-  knowledge_retrieval    -> briefing_generator
+  resource_coordination  -> knowledge_retrieval
+  knowledge_retrieval    -> rescue_coordination
+  rescue_coordination    -> briefing_generator
 ```
 
 The executor derives levels from the graph or consumes levels directly; both representations must
@@ -118,8 +126,8 @@ agree (validated at startup).
 
 - Startup validation: graph is a DAG, exactly one sink, every node reachable.
 - Unit test matrix:
-  - L1 parallel start time < sequential time (both agents begin before either finishes).
-  - L2 never starts until both L1 reports exist.
-  - Briefing only after both L2 reports exist.
-  - A failed node blocks its level until retry/fallback resolves.
+  - Strict ordering: each agent's completion strictly precedes the next agent's start.
+  - Each agent's context carries exactly its predecessor's report.
+  - Briefing only after the rescue report exists.
+  - A failed node blocks the rest of the chain until retry/fallback resolves.
   - Re-run resets stages correctly and dedupes tasks/HITL.

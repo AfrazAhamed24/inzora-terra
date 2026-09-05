@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INZORA-X Vision Command Center</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="header-left">
+            <h1>INZORA-X <span class="sub">VISION COMMAND CENTER</span></h1>
+        </div>
+        <div class="header-right">
+            <span id="sys-status" class="status-badge status-ok">● SYSTEM OK</span>
+            <span id="clock" class="clock"></span>
+            <span id="test-mode-badge" class="status-badge status-warn" style="display:none">TEST MODE</span>
+        </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main id="main-grid">
+        <!-- Left Column -->
+        <section class="left-col">
+            <!-- Camera Panel -->
+            <div class="panel camera-panel">
+                <div class="panel-header">
+                    <span class="panel-title">LIVE CAMERA</span>
+                    <div class="view-mode-buttons">
+                        <button class="mode-btn active" data-mode="raw">RAW</button>
+                        <button class="mode-btn" data-mode="ai_detection">AI DETECT</button>
+                        <button class="mode-btn" data-mode="face">FACE</button>
+                        <button class="mode-btn" data-mode="gesture">GESTURE</button>
+                        <button class="mode-btn" data-mode="thermal">THERMAL</button>
+                        <button class="mode-btn" data-mode="all_views">ALL VIEWS</button>
+                    </div>
+                </div>
+                <div class="camera-container">
+                    <div id="camera-main" class="camera-view">
+                        <canvas id="cam-canvas" width="1280" height="720"></canvas>
+                        <div id="camera-offline" class="offline-overlay" style="display:none">
+                            <div class="offline-icon">📷</div>
+                            <div>CAMERA</div>
+                            <div class="status-dot offline">● OFFLINE</div>
+                        </div>
+                    </div>
+                    <div id="grid-views" class="grid-views" style="display:none">
+                        <div class="grid-cell"><canvas id="grid-raw" width="640" height="360"></canvas><div class="grid-label">RAW</div></div>
+                        <div class="grid-cell"><canvas id="grid-ai" width="640" height="360"></canvas><div class="grid-label">AI DETECT</div></div>
+                        <div class="grid-cell"><canvas id="grid-face" width="640" height="360"></canvas><div class="grid-label">FACE</div></div>
+                        <div class="grid-cell"><canvas id="grid-gesture" width="640" height="360"></canvas><div class="grid-label">GESTURE</div></div>
+                        <div class="grid-cell"><canvas id="grid-thermal" width="640" height="360"></canvas><div class="grid-label">THERMAL</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Victims Panel -->
+            <div class="panel victims-panel">
+                <div class="panel-header">
+                    <span class="panel-title">PERSONS / VICTIMS</span>
+                    <span id="person-count" class="panel-count">00</span>
+                </div>
+                <div id="victims-list" class="panel-body scroll-list">
+                    <div class="empty-state">No persons detected</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column -->
+        <section class="right-col">
+            <!-- Map Panel -->
+            <div class="panel map-panel">
+                <div class="panel-header">
+                    <span class="panel-title">LIVE MAP</span>
+                </div>
+                <div id="map" class="map-container"></div>
+            </div>
+
+            <!-- Alert & Sensor Info Row -->
+            <div class="bottom-row">
+                <!-- Alerts Panel -->
+                <div class="panel alerts-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">ALERTS</span>
+                        <span id="alert-count" class="panel-count">0</span>
+                    </div>
+                    <div id="alerts-list" class="panel-body scroll-list">
+                        <div class="empty-state">No alerts</div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="panel stats-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">DETECTIONS</span>
+                    </div>
+                    <div class="panel-body stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-persons">0</div>
+                            <div class="stat-label">PERSONS</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-faces">0</div>
+                            <div class="stat-label">FACES</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-gestures">—</div>
+                            <div class="stat-label">GESTURE</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-fire">—</div>
+                            <div class="stat-label">FIRE</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-smoke">—</div>
+                            <div class="stat-label">SMOKE</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="stat-hotspots">0</div>
+                            <div class="stat-label">HOTSPOTS</div>
+                        </div>
+                    </div>
+                    <!-- Test Mode Controls -->
+                    <div id="test-controls" class="test-controls" style="display:none">
+                        <div class="panel-header" style="padding:6px 10px">
+                            <span class="panel-title">🧪 TEST CONTROLS</span>
+                        </div>
+                        <div class="test-buttons">
+                            <button class="test-btn" onclick="testEvent('fire')">🔥 Fire</button>
+                            <button class="test-btn" onclick="testEvent('smoke')">💨 Smoke</button>
+                            <button class="test-btn" onclick="testEvent('person')">👤 Person</button>
+                            <button class="test-btn" onclick="testEvent('gesture')">🤚 Gesture</button>
+                            <button class="test-btn" onclick="testEvent('hotspot')">🌡️ Hotspot</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Sensor Health Bar -->
+    <footer id="sensor-bar">
+        <div class="sensor-bar-title">SYSTEM HEALTH</div>
+        <div id="sensor-health" class="sensor-health-list">
+            <!-- Filled by JS -->
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

@@ -398,6 +398,7 @@ class MissionState(_StrictModel):
     victim_map: Dict[str, Any] = Field(default_factory=dict)
     resource_allocation: Dict[str, Any] = Field(default_factory=dict)
     knowledge_results: Dict[str, Any] = Field(default_factory=dict)
+    rescue_guidance: Dict[str, Any] = Field(default_factory=dict)
 
     confidence_scores: Dict[str, float] = Field(default_factory=dict)
 

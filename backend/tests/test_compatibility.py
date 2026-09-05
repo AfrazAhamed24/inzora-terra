@@ -113,12 +113,14 @@ def test_cli_flow_runs_unchanged():
     assert "B2" in mb["priority_zones"]
     assert state.risk_report["likelihood"] == "HIGH"
     assert state.victim_map["primary_search_zone"] == "B2"
-    assert len(state.tasks) == 7
+    assert state.rescue_guidance["priority_sequence"]
+    # sequential chain: risk(2) + victim(3) + resource(4) + rescue(2) tasks
+    assert len(state.tasks) == 11
     assert set(state.confidence_scores.keys()) == {
         "risk_assessment", "victim_localization", "resource_coordination",
-        "knowledge_retrieval",
+        "knowledge_retrieval", "rescue_coordination",
     }
-    assert len(briefing["agent_log"]) >= 4
+    assert len(briefing["agent_log"]) >= 5
 
 
 def test_cli_stage_is_spec_canonical_completed():

@@ -1,0 +1,236 @@
+/*
+ * Glassmorphism Design Tokens for Inzora Terra OS
+ * Modern glass effects with deep dark theme
+ */
+
+:root {
+  /* Core glass layers */
+  --glass-lighter: rgba(255, 255, 255, 0.08);
+  --glass-normal: rgba(255, 255, 255, 0.05);
+  --glass-heavy: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  /* Glass variants */
+  --glass-primary: rgba(59, 130, 246, 0.1);
+  --glass-success: rgba(34, 197, 94, 0.1);
+  --glass-warning: rgba(245, 158, 11, 0.1);
+  --glass-danger: rgba(239, 68, 68, 0.1);
+  --glass-purple: rgba(139, 92, 246, 0.1);
+
+  /* Background layers */
+  --bg-primary: #09090b;
+  --bg-secondary: rgba(9, 9, 11, 0.8);
+  --bg-tertiary: rgba(9, 9, 11, 0.6);
+
+  /* Glass blur levels */
+  --blur-light: blur(8px);
+  --blur-normal: blur(16px);
+  --blur-heavy: blur(24px);
+
+  /* Glass borders */
+  --border-light: 1px solid var(--glass-border);
+  --border-normal: 1.5px solid var(--glass-border);
+  --border-accent: 2px solid rgba(59, 130, 246, 0.3);
+
+  /* Shadows for glass */
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.3);
+  --shadow-glass-hover: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --shadow-glass-active: 0 2px 20px rgba(0, 0, 0, 0.2);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Typography */
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Inter', sans-serif;
+
+  /* Transitions */
+  --transition-fast: all 0.2s ease;
+  --transition-normal: all 0.3s ease;
+  --transition-slow: all 0.5s ease;
+}
+
+/* Base glass component styles */
+.glass-panel {
+  background: var(--glass-normal);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border: var(--border-normal);
+  border-radius: 12px;
+  box-shadow: var(--shadow-glass);
+  transition: var(--transition-normal);
+}
+
+.glass-panel:hover {
+  background: var(--glass-lighter);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-1px);
+}
+
+.glass-panel:active {
+  background: var(--glass-normal);
+  box-shadow: var(--shadow-glass-active);
+  transform: translateY(0);
+}
+
+/* Glass variants */
+.glass-primary {
+  background: var(--glass-primary);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border: var(--border-accent);
+}
+
+.glass-success {
+  background: var(--glass-success);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border: 1.5px solid rgba(34, 197, 94, 0.2);
+}
+
+.glass-warning {
+  background: var(--glass-warning);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border: 1.5px solid rgba(245, 158, 11, 0.2);
+}
+
+.glass-danger {
+  background: var(--glass-danger);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border: 1.5px solid rgba(239, 68, 68, 0.2);
+}
+
+.glass-purple {
+  background: var(--glass-purple);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border: 1.5px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Glass overlays */
+.glass-overlay {
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: var(--blur-heavy);
+  -webkit-backdrop-filter: var(--blur-heavy);
+  border: var(--border-light);
+}
+
+.glass-tooltip {
+  background: var(--glass-normal);
+  backdrop-filter: var(--blur-light);
+  -webkit-backdrop-filter: var(--blur-light);
+  border: var(--border-light);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Glass nav styles */
+.glass-nav {
+  background: rgba(9, 9, 11, 0.8);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border-bottom: var(--border-light);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Glass card styles */
+.glass-card {
+  background: var(--glass-normal);
+  backdrop-filter: var(--blur-normal);
+  -webkit-backdrop-filter: var(--blur-normal);
+  border: var(--border-normal);
+  border-radius: 16px;
+  transition: var(--transition-normal);
+}
+
+.glass-card:hover {
+  background: var(--glass-lighter);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-2px);
+}
+
+/* Glass badge styles */
+.glass-badge {
+  background: var(--glass-normal);
+  backdrop-filter: var(--blur-light);
+  -webkit-backdrop-filter: var(--blur-light);
+  border: var(--border-light);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-mono);
+}
+
+/* Glass progress styles */
+.glass-progress {
+  background: var(--glass-normal);
+  border-radius: 4px;
+  border: var(--border-light);
+  overflow: hidden;
+}
+
+.glass-progress-fill {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.6), rgba(34, 197, 94, 0.6));
+  backdrop-filter: var(--blur-light);
+  -webkit-backdrop-filter: var(--blur-light);
+  border-radius: 4px;
+  transition: var(--transition-slow);
+}
+
+/* Glass input styles */
+.glass-input {
+  background: var(--glass-normal);
+  backdrop-filter: var(--blur-light);
+  -webkit-backdrop-filter: var(--blur-light);
+  border: var(--border-normal);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-mono);
+  transition: var(--transition-normal);
+}
+
+.glass-input:focus {
+  background: var(--glass-lighter);
+  border: var(--border-accent);
+  outline: none;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+/* Text utilities */
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Utility classes for common patterns */
+.glass-panel-active {
+  background: var(--glass-lighter);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+.glass-panel-successful {
+  background: var(--glass-success);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.glass-panel-warning {
+  background: var(--glass-warning);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.glass-panel-danger {
+  background: var(--glass-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}

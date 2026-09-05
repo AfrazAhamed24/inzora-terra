@@ -11,6 +11,7 @@ import asyncio
 import pytest
 
 from backend.agents.knowledge.agent import KnowledgeRetrievalAgent
+from backend.agents.rescue_coordination.agent import RescueCoordinationAgent
 from backend.agents.resource_coordination.agent import ResourceCoordinationAgent
 from backend.agents.risk_assessment.agent import RiskAssessmentAgent
 from backend.agents.victim_localization.agent import VictimLocalizationAgent
@@ -40,6 +41,7 @@ ALL_AGENTS = [
     VictimLocalizationAgent(),
     ResourceCoordinationAgent(),
     KnowledgeRetrievalAgent(),
+    RescueCoordinationAgent(),
 ]
 
 AGENT_IDS = [a.name for a in ALL_AGENTS]
@@ -77,6 +79,7 @@ def default_agents() -> dict:
         "victim_localization": VictimLocalizationAgent(),
         "resource_coordination": ResourceCoordinationAgent(),
         "knowledge_retrieval": KnowledgeRetrievalAgent(),
+        "rescue_coordination": RescueCoordinationAgent(),
     }
 
 
@@ -160,7 +163,7 @@ def test_agent_identity_metadata(agent):
     # Registry key = stable slug; reads/writes match the MISSION_STATE §6 matrix.
     assert agent.name in {
         "risk_assessment", "victim_localization",
-        "resource_coordination", "knowledge_retrieval",
+        "resource_coordination", "knowledge_retrieval", "rescue_coordination",
     }
     assert agent.reads and agent.writes
 
@@ -193,7 +196,7 @@ def test_agent_outputs_record_standard_envelope_on_state():
     state = mgr.state
 
     for slug in ("risk_assessment", "victim_localization",
-                 "resource_coordination", "knowledge_retrieval"):
+                 "resource_coordination", "knowledge_retrieval", "rescue_coordination"):
         record = [o for o in state.agent_outputs if o.agent_name == slug][-1]
         assert CONTRACT_OUTPUT_KEYS <= record.output.keys()
         assert record.status == "ok"
@@ -304,6 +307,7 @@ def _executor_with(risk_agent, *, config=None):
             "victim_localization": ok_handler,
             "resource_coordination": ok_handler,
             "knowledge_retrieval": ok_handler,
+            "rescue_coordination": ok_handler,
             **BRIEFING,
         },
         agents={"risk_assessment": risk_agent},
@@ -459,10 +463,13 @@ def test_full_graph_preserves_legacy_outputs():
     assert state.victim_map["primary_search_zone"] == "B2"
     assert state.resource_allocation["assignments"]
     assert state.knowledge_results["recommendations"]
-    assert len(state.tasks) == 7
+    assert state.rescue_guidance["priority_sequence"]
+    # risk context elevates B1 to HIGH, adding a victim task; resource then
+    # deploys for 3 HIGH zones + perimeter (4 assignments). 2+3+4+2 = 11 tasks.
+    assert len(state.tasks) == 11
     assert set(state.confidence_scores) == {
         "risk_assessment", "victim_localization",
-        "resource_coordination", "knowledge_retrieval",
+        "resource_coordination", "knowledge_retrieval", "rescue_coordination",
     }
     assert state.status.stage == "briefing_ready"
     assert mgr.validate() == []

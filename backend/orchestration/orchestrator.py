@@ -8,6 +8,7 @@ from backend.agents.risk_assessment.agent import RiskAssessmentAgent
 from backend.agents.victim_localization.agent import VictimLocalizationAgent
 from backend.agents.resource_coordination.agent import ResourceCoordinationAgent
 from backend.agents.knowledge.agent import KnowledgeRetrievalAgent
+from backend.agents.rescue_coordination.agent import RescueCoordinationAgent
 from backend.agents.registry import AgentRegistry
 from backend.orchestration.briefing import BriefingGenerator, collect_handoffs
 from backend.orchestration.executor import ExecutionResult, GraphExecutor
@@ -41,6 +42,7 @@ class Orchestrator(AgentProtocol):
         self.register_agent(VictimLocalizationAgent())
         self.register_agent(ResourceCoordinationAgent())
         self.register_agent(KnowledgeRetrievalAgent())
+        self.register_agent(RescueCoordinationAgent())
 
     # ------------------------------------------------------------------
     # Lifecycle API (ORCHESTRATOR.md §8)
@@ -127,6 +129,7 @@ class Orchestrator(AgentProtocol):
         victims = self.state.victim_map
         resources = self.state.resource_allocation
         knowledge = self.state.knowledge_results
+        rescue = self.state.rescue_guidance
 
         overall_risk = risk.get("likelihood", "LOW")
         priority_zones = [z["zone"] for z in victims.get("zones", []) if z.get("priority") == "HIGH"]
@@ -142,6 +145,16 @@ class Orchestrator(AgentProtocol):
                 "immediate_actions": recommendations[:3],
                 "resource_status": "Deployed" if resources else "Pending",
                 "next_update_in": "15 minutes",
+                "rescue_guidance": {
+                    "summary": rescue.get("summary", ""),
+                    "entry_clearance": rescue.get("entry_clearance", "HOLD"),
+                    "priority_sequence": rescue.get("priority_sequence", []),
+                    "objectives": rescue.get("objectives", []),
+                    "extraction_guidance": rescue.get("extraction_guidance", []),
+                    "safety_constraints": rescue.get("safety_constraints", []),
+                    "triage_notes": rescue.get("triage_notes", []),
+                    "comms_guidance": rescue.get("comms_guidance", ""),
+                },
             },
             "risk_report": risk,
             "victim_map": victims,

@@ -2,8 +2,11 @@
 
 Implements ``docs/specs/DEPENDENCY_GRAPH.md`` (v1.0). The execution order of TERRA-X agents is
 declared as a directed acyclic graph: nodes carry a level plus the fields they read/write, and
-edges encode dependencies. The GraphExecutor (``backend/orchestration/executor.py``) derives
-topological levels from this graph and schedules level-by-level, in parallel within a level.
+edges encode dependencies. The default mission graph is a **strict sequential chain** (one node
+per level): risk → victim → resource → knowledge → rescue → briefing, so every agent consumes
+the previous agent's report before the next one starts. The GraphExecutor
+(``backend/orchestration/executor.py``) derives topological levels from this graph and schedules
+level-by-level.
 
 Formal properties (DEPENDENCY_GRAPH §4) enforced at construction:
 
@@ -199,41 +202,49 @@ MISSION_GRAPH = DependencyGraph(
             ),
             NodeSpec.make(
                 "victim_localization",
-                level=1,
-                reads=["telemetry", "environment", "evidence"],
+                level=2,
+                reads=["risk_report", "telemetry", "environment", "evidence"],
                 writes=["victim_map", "confidence_scores", "tasks", "human_decisions"],
                 stage_token="victims_localized",
             ),
             NodeSpec.make(
                 "resource_coordination",
-                level=2,
-                reads=["risk_report", "victim_map", "tasks"],
+                level=3,
+                reads=["victim_map", "risk_report", "tasks"],
                 writes=["resource_allocation", "tasks"],
                 stage_token="resources_allocated",
             ),
             NodeSpec.make(
                 "knowledge_retrieval",
-                level=2,
-                reads=["risk_report", "victim_map", "environment"],
+                level=4,
+                reads=["resource_allocation", "risk_report", "victim_map", "environment"],
                 writes=["knowledge_results", "confidence_scores"],
                 stage_token="knowledge_queried",
             ),
             NodeSpec.make(
-                "briefing_generator",
-                level=3,
+                "rescue_coordination",
+                level=5,
                 reads=["risk_report", "victim_map", "resource_allocation",
-                       "knowledge_results", "confidence_scores"],
+                       "knowledge_results"],
+                writes=["rescue_guidance", "confidence_scores", "tasks"],
+            ),
+            NodeSpec.make(
+                "briefing_generator",
+                level=6,
+                reads=["risk_report", "victim_map", "resource_allocation",
+                       "knowledge_results", "rescue_guidance", "confidence_scores"],
                 writes=["summary"],
                 stage_token="briefing_ready",
             ),
         )
     },
+    # Strict sequential pipeline: each specialist consumes the previous agent's report
+    # before the next one starts (risk → victim → resource → knowledge → rescue → briefing).
     edges=(
-        ("risk_assessment", "resource_coordination"),
+        ("risk_assessment", "victim_localization"),
         ("victim_localization", "resource_coordination"),
-        ("risk_assessment", "knowledge_retrieval"),
-        ("victim_localization", "knowledge_retrieval"),
-        ("resource_coordination", "briefing_generator"),
-        ("knowledge_retrieval", "briefing_generator"),
+        ("resource_coordination", "knowledge_retrieval"),
+        ("knowledge_retrieval", "rescue_coordination"),
+        ("rescue_coordination", "briefing_generator"),
     ),
 )

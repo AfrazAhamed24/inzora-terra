@@ -49,7 +49,8 @@ def validate_mutation(field: str, value: Any) -> None:
         problems = _confidence_problems(value, "confidence_scores")
         if problems:
             raise StateValidationError("; ".join(problems))
-    if field in ("risk_report", "victim_map", "resource_allocation", "knowledge_results"):
+    if field in ("risk_report", "victim_map", "resource_allocation", "knowledge_results",
+                 "rescue_guidance"):
         if not isinstance(value, dict):
             raise StateValidationError(f"{field!r} must be a dict")
     if field == "environment":

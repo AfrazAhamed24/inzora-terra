@@ -45,6 +45,7 @@ RISK_ASSESSMENT = "risk_assessment"
 VICTIM_LOCALIZATION = "victim_localization"
 RESOURCE_COORDINATION = "resource_coordination"
 KNOWLEDGE_RETRIEVAL = "knowledge_retrieval"
+RESCUE_COORDINATION = "rescue_coordination"
 SIMULATION = "simulation"
 MISSION_ASSISTANT = "mission_assistant"
 SYSTEM = "system"
@@ -56,6 +57,7 @@ COMPONENTS: FrozenSet[str] = frozenset(
         VICTIM_LOCALIZATION,
         RESOURCE_COORDINATION,
         KNOWLEDGE_RETRIEVAL,
+        RESCUE_COORDINATION,
         SIMULATION,
         MISSION_ASSISTANT,
         SYSTEM,
@@ -76,6 +78,7 @@ ALL_FIELDS: FrozenSet[str] = frozenset(
         "victim_map",
         "resource_allocation",
         "knowledge_results",
+        "rescue_guidance",
         "confidence_scores",
         "timeline",
         "human_decisions",
@@ -96,6 +99,7 @@ OWNED_REPORT_FIELDS: Dict[str, str] = {
     VICTIM_LOCALIZATION: "victim_map",
     RESOURCE_COORDINATION: "resource_allocation",
     KNOWLEDGE_RETRIEVAL: "knowledge_results",
+    RESCUE_COORDINATION: "rescue_guidance",
 }
 
 ALL_FIELDS_SET: Set[str] = set(ALL_FIELDS)
@@ -106,9 +110,15 @@ ALL_FIELDS_SET: Set[str] = set(ALL_FIELDS)
 
 READ_PERMISSIONS: Dict[str, Set[str]] = {
     RISK_ASSESSMENT: {"telemetry", "environment", "evidence"},
-    VICTIM_LOCALIZATION: {"telemetry", "environment", "evidence"},
+    VICTIM_LOCALIZATION: {"risk_report", "telemetry", "environment", "evidence"},
     RESOURCE_COORDINATION: {"risk_report", "victim_map", "tasks"},
-    KNOWLEDGE_RETRIEVAL: {"risk_report", "victim_map", "environment"},
+    KNOWLEDGE_RETRIEVAL: {"resource_allocation", "risk_report", "victim_map", "environment"},
+    RESCUE_COORDINATION: {
+        "risk_report",
+        "victim_map",
+        "resource_allocation",
+        "knowledge_results",
+    },
     ORCHESTRATOR: ALL_FIELDS_SET,
     SIMULATION: set(),
     MISSION_ASSISTANT: {
@@ -145,6 +155,7 @@ _ORCHESTRATOR_FALLBACK = {
     "victim_map",
     "resource_allocation",
     "knowledge_results",
+    "rescue_guidance",
 }
 
 WRITE_PERMISSIONS: Dict[str, Set[str]] = {
@@ -153,6 +164,7 @@ WRITE_PERMISSIONS: Dict[str, Set[str]] = {
     VICTIM_LOCALIZATION: {"victim_map", "confidence_scores", "tasks", "human_decisions"},
     RESOURCE_COORDINATION: {"resource_allocation", "tasks"},
     KNOWLEDGE_RETRIEVAL: {"knowledge_results", "confidence_scores"},
+    RESCUE_COORDINATION: {"rescue_guidance", "confidence_scores"},
     ORCHESTRATOR: _ORCHESTRATOR_DOMAIN | _ORCHESTRATOR_CONTROLLER | _ORCHESTRATOR_FALLBACK,
     SIMULATION: {"telemetry", "environment"},
     MISSION_ASSISTANT: {"assistant_context"},

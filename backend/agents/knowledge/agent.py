@@ -8,7 +8,7 @@ class KnowledgeRetrievalAgent(BaseAgent):
     version = "1.0"
     description = "Queries SOPs and building codes relevant to the incident (prototype, not RAG)"
     capabilities = ["knowledge", "sop", "building_code"]
-    reads = frozenset({"risk_report", "victim_map", "environment"})
+    reads = frozenset({"resource_allocation", "risk_report", "victim_map", "environment"})
     writes = frozenset({"knowledge_results"})
 
     def __init__(self):
@@ -54,6 +54,8 @@ class KnowledgeRetrievalAgent(BaseAgent):
     async def perceive(self, gop: TERRAState) -> Dict[str, Any]:
         risk_report = gop.risk_report
         victim_map = gop.victim_map
+        # Consumes the Resource Coordination report handed off before this agent runs.
+        resource_allocation = gop.resource_allocation or {}
         building_info = None
         for e in gop.evidence:
             if e.source.startswith("building"):
@@ -62,6 +64,7 @@ class KnowledgeRetrievalAgent(BaseAgent):
         return {
             "risk_report": risk_report,
             "victim_map": victim_map,
+            "resource_allocation": resource_allocation,
             "building_info": building_info,
         }
 
@@ -69,6 +72,7 @@ class KnowledgeRetrievalAgent(BaseAgent):
         risk = perception.get("risk_report") or {}
         victims = perception.get("victim_map") or {}
         building = perception.get("building_info") or {}
+        resource_plan = perception.get("resource_allocation") or {}
 
         risk_level = risk.get("likelihood", "LOW")
         hazards = risk.get("hazards", [])
@@ -111,12 +115,28 @@ class KnowledgeRetrievalAgent(BaseAgent):
             zone_names = [z["zone"] for z in high_prob_zones]
             recommendations.append(f"Prioritize search in zones: {', '.join(zone_names)}")
 
+        # Resource handoff context: keep SOPs aligned with the deployed team plan.
+        assignments = resource_plan.get("assignments", []) or []
+        if assignments:
+            recommendations.append(
+                f"Align search procedures with deployed plan ({len(assignments)} assignments)"
+            )
+
+        sop_names = [s["title"] for s in relevant_sops[:3]]
+        reasoning = (
+            f"Matched {len(relevant_sops)} SOPs ({', '.join(sop_names)}) and "
+            f"{len(relevant_codes)} building codes against the {risk_level} risk level. "
+            f"Generated {len(recommendations)} safety recommendations for {len(high_prob_zones)} priority zones."
+        )
+
         return {
             "action": "query_knowledge",
             "relevant_sops": relevant_sops[:3],
             "relevant_codes": relevant_codes[:2],
             "recommendations": recommendations,
+            "resource_context": len(assignments),
             "confidence": round(min(0.6 + len(relevant_sops) * 0.1, 0.9), 2),
+            "reasoning": reasoning,
         }
 
     async def act(self, decision: Dict[str, Any], gop: TERRAState) -> Dict[str, Any]:
@@ -125,15 +145,16 @@ class KnowledgeRetrievalAgent(BaseAgent):
             "building_codes": decision["relevant_codes"],
             "recommendations": decision["recommendations"],
         }
+        reasoning = decision.get("reasoning", "")
         return build_contract_output(
             confidence=decision["confidence"],
             produced_artifacts={"knowledge_results": report},
-            reasoning_summary=(
+            reasoning_summary=reasoning or (
                 f"Matched {len(report['sops'])} SOPs and {len(report['building_codes'])} "
-                f"building codes"
+                f"building codes against the {decision.get('resource_context', 0)}-assignment plan"
             ),
             next_handoff={
-                "agent": "briefing_generator",
-                "reason": "knowledge recommendations ready for the mission briefing",
+                "agent": "rescue_coordination",
+                "reason": "knowledge base scopes the rescue handoff",
             },
         )

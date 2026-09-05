@@ -11,6 +11,7 @@ import pytest
 
 from backend.agents.knowledge.agent import KnowledgeRetrievalAgent
 from backend.agents.registry import AgentRegistry
+from backend.agents.rescue_coordination.agent import RescueCoordinationAgent
 from backend.agents.resource_coordination.agent import ResourceCoordinationAgent
 from backend.agents.risk_assessment.agent import RiskAssessmentAgent
 from backend.agents.victim_localization.agent import VictimLocalizationAgent
@@ -31,7 +32,8 @@ def _registry() -> AgentRegistry:
     registry = AgentRegistry()
     registry.register_many(
         [RiskAssessmentAgent, VictimLocalizationAgent,
-         ResourceCoordinationAgent, KnowledgeRetrievalAgent]
+         ResourceCoordinationAgent, KnowledgeRetrievalAgent,
+         RescueCoordinationAgent]
     )
     return registry
 
@@ -155,10 +157,12 @@ def test_loop_timeout_escalates_and_completes():
 
 def test_loop_request_stop():
     async def scenario():
-        mgr, loop, _, _ = _make_loop(max_cycles=200, hitl_enabled=False)
+        mgr, loop, _, _ = _make_loop(max_cycles=2000, hitl_enabled=False)
 
         async def stop():
-            await asyncio.sleep(0.1)
+            # Deterministic: wait for real telemetry progress instead of a wall-clock race.
+            while len(mgr.state.telemetry) < 10:
+                await asyncio.sleep(0.005)
             loop.request_stop()
 
         task = asyncio.create_task(stop())

@@ -18,13 +18,20 @@ docs/       Design, tool, and workflow documentation
 ## Backend
 
 ```bash
-cd backend
-pip install -r requirements.txt
-python -m backend.run
+pip install -r backend/requirements.txt
+python -m backend.run          # CLI mission pipeline
+python -m backend.api.main     # FastAPI server (http://127.0.0.1:8000)
+```
+
+Tests:
+
+```bash
+python -m pytest
 ```
 
 Requires `GROQ_API_KEY` in `.env` (see `.env.example`) for LLM features (Phase 2).
 The current agents are rule-based; the demo runs with no external services.
+The API exposes REST + SSE under `/api/v1` (missions, telemetry, replay, assistant).
 
 ## Frontend
 
@@ -43,6 +50,9 @@ npm run lint
 
 ## Status
 
-- Backend: working CLI pipeline (sequential; dependency-graph rework planned in Phase 1)
-- Frontend: working UI with mock data (backend API integration planned in Phase 1)
-- Frontend ↔ backend: not yet connected
+- Backend: dependency-graph engine (Phase 1) + FastAPI mission API with SSE streaming (Phase 2A); 221 tests passing
+- Frontend: React command center connected to the live API (mission lifecycle, telemetry stream, timeline)
+- Mission Assistant: **D.E.X.T.E.R** (Disaster EXecutive Tactical Emergency Responder) — a J.A.R.V.I.S.-style voice conductor that narrates the mission: environment scan → agents activate and report one by one → cinematic final briefing. Voice input/output via the Web Speech API (no keys, offline-safe); agents are rule-based until LLM integration lands.
+- **Rescue Coordination Agent**: the last specialist in the dependency graph. It synthesizes risk, victim, resource, and knowledge reports into a field-ready `rescue_guidance` (entry clearance, priority sequence, objectives, extraction techniques, safety constraints, triage + comms notes) that the final briefing surfaces as the Rescue Guidance panel.
+- **Terra X**: the single D.E.X.T.E.R companion chat docked bottom-left — quick-query chips (risk, victims, next actions, rescue guidance, who's working) answered from live mission state with voice replies.
+- **Voice commands**: press the mic (bottom-right) and say "Dexter, run the mission", "Dexter, status", "Dexter, open the assistant", "Dexter, show the briefing", "Dexter, mute". Any other phrase is answered from live mission state.

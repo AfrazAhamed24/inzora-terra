@@ -18,6 +18,7 @@ from backend.agents.registry import (
     RegistryError,
     UnknownAgentError,
 )
+from backend.agents.rescue_coordination.agent import RescueCoordinationAgent
 from backend.agents.resource_coordination.agent import ResourceCoordinationAgent
 from backend.agents.risk_assessment.agent import RiskAssessmentAgent
 from backend.agents.victim_localization.agent import VictimLocalizationAgent
@@ -39,6 +40,7 @@ def default_factories():
         VictimLocalizationAgent,
         ResourceCoordinationAgent,
         KnowledgeRetrievalAgent,
+        RescueCoordinationAgent,
     ]
 
 
@@ -104,11 +106,12 @@ def test_registry_register_many_and_iteration():
     registry.register_many(default_factories())
     assert sorted(registry) == [
         "knowledge_retrieval",
+        "rescue_coordination",
         "resource_coordination",
         "risk_assessment",
         "victim_localization",
     ]
-    assert len(registry) == 4
+    assert len(registry) == 5
 
 
 def test_registry_metadata_and_graph_position():
@@ -121,26 +124,24 @@ def test_registry_metadata_and_graph_position():
     assert isinstance(meta["capabilities"], list)
     assert meta["level"] == 1
     assert meta["dependencies"] == []
-    assert "resource_coordination" in meta["dependents"]
+    assert meta["dependents"] == ["victim_localization"]
 
-    victim = registry.metadata("resource_coordination")
+    victim = registry.metadata("victim_localization")
     assert victim["level"] == 2
-    assert sorted(victim["dependencies"]) == ["risk_assessment", "victim_localization"]
+    assert sorted(victim["dependencies"]) == ["risk_assessment"]
 
 
 def test_registry_level_dependencies_dependents():
     registry = AgentRegistry()
     registry.register_many(default_factories())
     assert registry.level("risk_assessment") == 1
-    assert registry.level("resource_coordination") == 2
-    assert registry.dependencies("resource_coordination") == (
-        "risk_assessment",
-        "victim_localization",
-    )
-    assert registry.dependents("risk_assessment") == (
-        "knowledge_retrieval",
-        "resource_coordination",
-    )
+    assert registry.level("victim_localization") == 2
+    assert registry.level("resource_coordination") == 3
+    assert registry.level("knowledge_retrieval") == 4
+    assert registry.level("rescue_coordination") == 5
+    assert registry.dependencies("victim_localization") == ("risk_assessment",)
+    assert registry.dependencies("resource_coordination") == ("victim_localization",)
+    assert registry.dependents("risk_assessment") == ("victim_localization",)
 
 
 def test_registry_validate_good_agents():
@@ -294,6 +295,8 @@ def test_executor_reports_carry_cycle_id_and_as_of():
     assert mgr.state.victim_map.get("cycle_id")
     assert mgr.state.resource_allocation.get("cycle_id")
     assert mgr.state.knowledge_results.get("cycle_id")
+    assert mgr.state.rescue_guidance.get("cycle_id")
+    assert mgr.state.rescue_guidance.get("as_of")
 
 
 def test_executor_agent_complete_trace_matches_cycle_and_summary_handoffs():
@@ -311,13 +314,14 @@ def test_executor_agent_complete_trace_matches_cycle_and_summary_handoffs():
     mgr = run_sync(scenario())
     assert mgr.state.summary is not None
     handoffs = collect_handoffs(mgr.state)
-    assert len(handoffs) >= 4  # all four agents declare a handoff
+    assert len(handoffs) >= 5  # all five agents declare a handoff
     agents = {h["agent"] for h in handoffs}
     assert agents == {
         "risk_assessment",
         "victim_localization",
         "resource_coordination",
         "knowledge_retrieval",
+        "rescue_coordination",
     }
     assert mgr.state.summary.handoffs
     assert mgr.state.summary.handoffs[0]["next_handoff"]["agent"]
@@ -348,6 +352,9 @@ def test_executor_retries_share_one_cycle_trace():
                 },
                 "knowledge_retrieval": lambda _ctx: {
                     "sops": [], "recommendations": [], "confidence": 0.8
+                },
+                "rescue_coordination": lambda _ctx: {
+                    "priority_sequence": [], "confidence": 0.8
                 },
                 "risk_assessment": flaky_handler,
             },
@@ -412,6 +419,7 @@ def test_executor_legacy_agents_mapping_backward_compat():
             "victim_localization": VictimLocalizationAgent(),
             "resource_coordination": ResourceCoordinationAgent(),
             "knowledge_retrieval": KnowledgeRetrievalAgent(),
+            "rescue_coordination": RescueCoordinationAgent(),
         }
         executor = GraphExecutor(
             mgr,
@@ -437,6 +445,7 @@ def test_executor_fallback_report_aligned():
             "victim_localization": VictimLocalizationAgent(),
             "resource_coordination": ResourceCoordinationAgent(),
             "knowledge_retrieval": KnowledgeRetrievalAgent(),
+            "rescue_coordination": RescueCoordinationAgent(),
         }
         agents["risk_assessment"] = fail_handler
         executor = GraphExecutor(

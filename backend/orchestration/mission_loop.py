@@ -46,6 +46,7 @@ class MissionLoopConfig:
     hitl_timeout_action: str = "escalate"
     hitl_enabled: bool = True      # master switch for HITL trigger evaluation + pausing
     loop_timeout_seconds: float = 0.0  # wall-clock cap (0 = unlimited)
+    pacing_seconds: float = 0.0    # wall-clock cadence per tick (0 = run at full speed)
 
 
 @dataclass
@@ -145,7 +146,8 @@ class MissionLoop:
         return result
 
     async def _tick(self, result: MissionLoopResult) -> None:
-        """One event-loop iteration: stream -> ingest -> graph -> summary -> pause check."""
+        """One event-loop iteration: stream -> ingest -> graph -> summary -> pause check -> pace."""
+        tick_started = time.monotonic()
         # 0. Pause gate: while a human decision is pending, park the loop (no streaming advances).
         while self._hitl.is_paused() and not self._is_terminal():
             if self._stop_requested:
@@ -163,7 +165,12 @@ class MissionLoop:
         result.packets_ingested += ingest_report["accepted"]
         self._mirror_evidence()
 
-        # 2. Dependency graph: re-run eligible agents periodically over the latest state.
+        # 2. Dependency graph: re-run the agent chain periodically over the latest state.
+        #    Re-runs are the engine's escalation mechanism — agents refine their reports as
+        #    telemetry accumulates (e.g. tilt crossing a stability threshold escalates the
+        #    risk report, which elevates victim zones and eventually trips a HITL trigger).
+        #    The timeline noise this produces is collapsed client-side (consecutive duplicate
+        #    cycles and rollback stage-changes are deduped into one clean forward story).
         if result.cycles % self._config.cycles_between_graph_runs == 0:
             if self._recorder is not None:
                 self._recorder.record(
@@ -203,6 +210,15 @@ class MissionLoop:
             outcome = await self._hitl.wait_for_resolution()
             if outcome == INTERRUPTED:
                 return
+
+        # 4. Pace the tick to the engine's wall-clock cadence. Without this the loop
+        #    spins at event-loop speed and fires the full agent graph dozens of times
+        #    per second — flooding the timeline and drowning the cinematic narration.
+        if self._config.pacing_seconds > 0:
+            elapsed = time.monotonic() - tick_started
+            remaining = self._config.pacing_seconds - elapsed
+            if remaining > 0:
+                await asyncio.sleep(remaining)
 
     def _evaluate_hitl_triggers(self) -> None:
         """Raise pending HITL decisions per AGENTS.md §HITL trigger rules.

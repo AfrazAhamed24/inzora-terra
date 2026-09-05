@@ -118,6 +118,14 @@ def derive_evidence(packets: List[Any]) -> Dict[str, Any]:
             sensor_evidence["trend"] = _trend_label(sensors["trend"])
         if "gas" in sensors:
             sensor_evidence["ppm"] = sensors["gas"]
+        if "thermal" in sensors:
+            temp = sensors["thermal"]
+            sensor_evidence["temp_c"] = temp
+            sensor_evidence["thermal"] = (
+                "heat signature detected" if temp >= 29.0 else "no heat signature"
+            )
+        if "gpr" in sensors:
+            sensor_evidence["gpr"] = "subsurface scan"
         if sensor_evidence:
             evidence[f"sensor:{zone}"] = sensor_evidence
 

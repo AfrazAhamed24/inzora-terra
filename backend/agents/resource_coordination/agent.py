@@ -75,12 +75,21 @@ class ResourceCoordinationAgent(BaseAgent):
         if risk_level == "CRITICAL":
             bottlenecks.append("CRITICAL risk - additional resources needed")
 
+        team_names = [a['assigned_to'] for a in assignments]
+        reasoning = (
+            f"Allocated {len(assignments)} teams ({', '.join(team_names)}) across "
+            f"{len(zones)} HIGH-priority zones. Utilization at {utilization:.0%}."
+        )
+        if bottlenecks:
+            reasoning += f" Bottlenecks identified: {'; '.join(bottlenecks)}."
+
         return {
             "action": "allocate_resources",
             "assignments": assignments,
             "resource_utilization": round(utilization, 2),
             "bottlenecks": bottlenecks,
             "confidence": round(min(0.7 + utilization * 0.2, 0.95), 2),
+            "reasoning": reasoning,
         }
 
     async def act(self, decision: Dict[str, Any], gop: TERRAState) -> Dict[str, Any]:
@@ -97,16 +106,17 @@ class ResourceCoordinationAgent(BaseAgent):
             "utilization": decision["resource_utilization"],
             "bottlenecks": decision["bottlenecks"],
         }
+        reasoning = decision.get("reasoning", "")
         return build_contract_output(
             confidence=decision["confidence"],
             produced_artifacts={"resource_allocation": report},
             tasks=tasks,
-            reasoning_summary=(
-                f"Allocated {len(report['assignments'])} assignments "
+            reasoning_summary=reasoning or (
+                f"Allocated {len(report['assignments'])} assignments across victim zones "
                 f"(utilization {report['utilization']:.0%})"
             ),
             next_handoff={
-                "agent": "briefing_generator",
-                "reason": "resource plan ready for the mission briefing",
+                "agent": "knowledge_retrieval",
+                "reason": "resource plan scopes the knowledge query",
             },
         )

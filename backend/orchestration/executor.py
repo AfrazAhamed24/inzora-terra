@@ -63,6 +63,7 @@ class ExecutorConfig:
     max_retries: int = 2
     retry_backoff_base: float = 1.0
     fallback_enabled: bool = True
+    agent_delay: float = 2.0  # seconds to pause between agent completions for pacing
 
 
 @dataclass
@@ -147,14 +148,21 @@ class GraphExecutor:
     # Scheduling
     # ------------------------------------------------------------------
 
-    async def run(self) -> ExecutionResult:
-        """Run every level of the graph in order; return the aggregate result."""
+    async def run(self, levels: Optional[List[int]] = None) -> ExecutionResult:
+        """Run graph levels in order; return the aggregate result.
+
+        ``levels=None`` runs the whole graph (every level). Passing a subset lets a caller
+        unfold a sequential chain one level at a time (the mission loop drives the linear
+        mission chain one level per tick so agents report one-by-one instead of re-running
+        the whole graph every tick).
+        """
         result = ExecutionResult()
         graph_trace = self._sink.new_graph_trace()
         result.trace_id = graph_trace
         self._sink.set_trace(graph_trace)
         try:
-            for level in self._graph.levels():
+            to_run = self._graph.levels() if levels is None else sorted(levels)
+            for level in to_run:
                 if self._cancelled:
                     break
                 await self._run_level(level, result)
@@ -166,6 +174,25 @@ class GraphExecutor:
                 if not task.done():
                     task.cancel()
         return result
+
+    def pending_levels(self) -> List[int]:
+        """Levels (ascending) whose nodes have not yet produced a recorded output.
+
+        A level is done once every node in it has a matching entry in ``agent_outputs``
+        (successful or fallback — the executor records both). This lets the mission loop
+        unfold the sequential chain one level per tick and stop re-running the graph entirely
+        once the whole chain has completed, instead of re-emitting the same agent/handoff/
+        stage events every tick. Because it keys off recorded runs rather than report fields,
+        it works for any graph (the briefing node records an output too, independent of when
+        the incremental summary is refreshed).
+        """
+        state = self._manager.state
+        ran = {a.agent_name for a in state.agent_outputs}
+        pending: List[int] = []
+        for level in self._graph.levels():
+            if any(slug not in ran for slug in self._graph.nodes_for_level(level)):
+                pending.append(level)
+        return pending
 
     def cancel(self) -> None:
         """Request cancellation of pending node cycles."""
@@ -210,6 +237,11 @@ class GraphExecutor:
             self._manager.advance(ORCHESTRATOR, "errored")
             result.status = "errored"
             self._cancelled = True
+
+        # Pacing: pause between levels so agents report one-by-one with visible
+        # processing time instead of all completing instantly.
+        if result.status == "completed" and self._config.agent_delay > 0 and not self._cancelled:
+            await asyncio.sleep(self._config.agent_delay)
 
     # ------------------------------------------------------------------
     # Node cycle (ORCHESTRATOR.md §4.3)
@@ -503,6 +535,18 @@ class GraphExecutor:
                 "sops": [],
                 "building_codes": [],
                 "recommendations": ["Re-run knowledge query once live data is available"],
+                "source": "fallback",
+            }
+        if slug == "rescue_coordination":
+            return {
+                "summary": "Rescue guidance unavailable — fallback data only",
+                "entry_clearance": "HOLD",
+                "priority_sequence": [],
+                "objectives": ["Re-run rescue coordination once live agent data is available"],
+                "extraction_guidance": [],
+                "safety_constraints": ["Verify all specialist reports before staging teams"],
+                "triage_notes": [],
+                "comms_guidance": "Maintain single incident channel",
                 "source": "fallback",
             }
         return None

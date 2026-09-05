@@ -14,47 +14,47 @@ def node(slug, level, **kw):
     return NodeSpec.make(slug, level=level, **kw)
 
 
-def test_default_graph_has_five_nodes():
+def test_default_graph_has_six_nodes():
     assert set(MISSION_GRAPH.nodes) == {
         "risk_assessment",
         "victim_localization",
         "resource_coordination",
         "knowledge_retrieval",
+        "rescue_coordination",
         "briefing_generator",
     }
 
 
 def test_default_graph_levels():
-    assert MISSION_GRAPH.levels() == [1, 2, 3]
-    assert MISSION_GRAPH.nodes_for_level(1) == [
-        "risk_assessment", "victim_localization"
-    ]
-    assert MISSION_GRAPH.nodes_for_level(2) == [
-        "knowledge_retrieval", "resource_coordination"
-    ]
-    assert MISSION_GRAPH.nodes_for_level(3) == ["briefing_generator"]
+    # Strict sequential pipeline: one node per level.
+    assert MISSION_GRAPH.levels() == [1, 2, 3, 4, 5, 6]
+    assert MISSION_GRAPH.nodes_for_level(1) == ["risk_assessment"]
+    assert MISSION_GRAPH.nodes_for_level(2) == ["victim_localization"]
+    assert MISSION_GRAPH.nodes_for_level(3) == ["resource_coordination"]
+    assert MISSION_GRAPH.nodes_for_level(4) == ["knowledge_retrieval"]
+    assert MISSION_GRAPH.nodes_for_level(5) == ["rescue_coordination"]
+    assert MISSION_GRAPH.nodes_for_level(6) == ["briefing_generator"]
 
 
 def test_default_graph_edges():
-    edges = set(MISSION_GRAPH.edges)
-    assert ("risk_assessment", "resource_coordination") in edges
-    assert ("victim_localization", "resource_coordination") in edges
-    assert ("risk_assessment", "knowledge_retrieval") in edges
-    assert ("victim_localization", "knowledge_retrieval") in edges
-    assert ("resource_coordination", "briefing_generator") in edges
-    assert ("knowledge_retrieval", "briefing_generator") in edges
+    # Each agent consumes the previous agent's report: a linear chain.
+    assert MISSION_GRAPH.edges == (
+        ("risk_assessment", "victim_localization"),
+        ("victim_localization", "resource_coordination"),
+        ("resource_coordination", "knowledge_retrieval"),
+        ("knowledge_retrieval", "rescue_coordination"),
+        ("rescue_coordination", "briefing_generator"),
+    )
 
 
 def test_dependencies_and_dependents():
-    assert MISSION_GRAPH.dependencies("resource_coordination") == (
-        "risk_assessment", "victim_localization"
-    )
-    assert MISSION_GRAPH.dependencies("briefing_generator") == (
-        "knowledge_retrieval", "resource_coordination"
-    )
-    assert set(MISSION_GRAPH.dependents("risk_assessment")) == {
-        "knowledge_retrieval", "resource_coordination"
-    }
+    assert MISSION_GRAPH.dependencies("victim_localization") == ("risk_assessment",)
+    assert MISSION_GRAPH.dependencies("resource_coordination") == ("victim_localization",)
+    assert MISSION_GRAPH.dependencies("knowledge_retrieval") == ("resource_coordination",)
+    assert MISSION_GRAPH.dependencies("rescue_coordination") == ("knowledge_retrieval",)
+    assert MISSION_GRAPH.dependencies("briefing_generator") == ("rescue_coordination",)
+    assert MISSION_GRAPH.dependents("risk_assessment") == ("victim_localization",)
+    assert MISSION_GRAPH.dependents("victim_localization") == ("resource_coordination",)
 
 
 def test_single_sink():
@@ -64,9 +64,8 @@ def test_single_sink():
 
 
 def test_sources_are_l1():
-    assert MISSION_GRAPH.sources() == (
-        "risk_assessment", "victim_localization"
-    )
+    # Only the risk agent starts without a predecessor report.
+    assert MISSION_GRAPH.sources() == ("risk_assessment",)
 
 
 def test_topological_order_covers_every_node_and_respects_edges():

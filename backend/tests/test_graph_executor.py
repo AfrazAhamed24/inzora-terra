@@ -9,6 +9,7 @@ import asyncio
 import pytest
 
 from backend.agents.knowledge.agent import KnowledgeRetrievalAgent
+from backend.agents.rescue_coordination.agent import RescueCoordinationAgent
 from backend.agents.resource_coordination.agent import ResourceCoordinationAgent
 from backend.agents.risk_assessment.agent import RiskAssessmentAgent
 from backend.agents.victim_localization.agent import VictimLocalizationAgent
@@ -62,6 +63,7 @@ def default_agents() -> dict:
         "victim_localization": VictimLocalizationAgent(),
         "resource_coordination": ResourceCoordinationAgent(),
         "knowledge_retrieval": KnowledgeRetrievalAgent(),
+        "rescue_coordination": RescueCoordinationAgent(),
     }
 
 
@@ -87,7 +89,8 @@ def test_full_graph_with_real_agents():
     flat = result.results()
     assert set(flat) == {
         "risk_assessment", "victim_localization",
-        "resource_coordination", "knowledge_retrieval", "briefing_generator",
+        "resource_coordination", "knowledge_retrieval",
+        "rescue_coordination", "briefing_generator",
     }
     for slug, node in flat.items():
         assert node.status == "ok", f"{slug} -> {node.status}"
@@ -97,8 +100,11 @@ def test_full_graph_with_real_agents():
     assert state.victim_map["primary_search_zone"] == "B2"
     assert state.resource_allocation["assignments"]
     assert state.knowledge_results["recommendations"]
+    assert state.rescue_guidance["priority_sequence"]
+    assert state.rescue_guidance["entry_clearance"] == "CONDITIONAL"
     assert state.summary is not None
     assert state.summary.mission_briefing["overall_risk"] == "HIGH"
+    assert state.summary.mission_briefing["rescue_guidance"]["priority_sequence"]
     assert state.status.stage == "briefing_ready"
     assert state.status.is_running is True
     assert mgr.validate() == []
@@ -116,13 +122,14 @@ def test_stage_advances_through_lifecycle():
     assert "briefing_ready" in types
 
 
-def test_level1_runs_in_parallel():
-    """Both L1 agents must overlap in wall-clock time (DEPENDENCY_GRAPH §7)."""
+def test_agents_run_strictly_sequentially():
+    """The pipeline is a strict chain: each agent starts only after the previous
+    one has completed (risk → victim → resource → knowledge → rescue → briefing)."""
     events = []
 
     async def slow(name, _ctx):
         events.append(f"{name}-start")
-        await asyncio.sleep(0.05)
+        await asyncio.sleep(0.03)
         events.append(f"{name}-end")
         return {"ok": True}
 
@@ -131,51 +138,59 @@ def test_level1_runs_in_parallel():
             return slow(name, ctx)
         return handler
 
+    order = ["risk", "victim", "resource", "knowledge", "rescue", "briefing"]
     mgr = make_manager()
     executor = GraphExecutor(
         mgr,
         handlers={
             "risk_assessment": make("risk"),
             "victim_localization": make("victim"),
-            "resource_coordination": ok_handler,
-            "knowledge_retrieval": ok_handler,
-            **BRIEFING,
+            "resource_coordination": make("resource"),
+            "knowledge_retrieval": make("knowledge"),
+            "rescue_coordination": make("rescue"),
+            "briefing_generator": make("briefing"),
         },
         config=ExecutorConfig(agent_timeout=10.0),
     )
     asyncio.run(executor.run())
 
-    start = [i for i, e in enumerate(events) if e.endswith("-start")]
-    end = [i for i, e in enumerate(events) if e.endswith("-end")]
-    # The two L1 agents interleave: the second start happens before the first end.
-    assert max(start) < min(end)
+    # No overlap: each agent's -end strictly precedes the next agent's -start.
+    for i in range(len(order) - 1):
+        prev_end = events.index(f"{order[i]}-end")
+        next_start = events.index(f"{order[i + 1]}-start")
+        assert prev_end < next_start, f"{order[i]} overlapped {order[i + 1]}"
 
 
-def test_level2_waits_for_both_level1_nodes():
-    """L2 resource/knowledge nodes must observe both L1 reports (DEPENDENCY_GRAPH §7)."""
+def test_each_agent_consumes_previous_report():
+    """Every specialist observes the predecessor's report from the chain."""
     mgr = make_manager()
     asyncio.run(run_executor(mgr))
     state = mgr.state
-    # resource_coordination consumed risk_report + victim_map
+    # victim consumed risk_report (risk context lands in the victim map)
+    assert state.victim_map["risk_context"] == "HIGH"
     for assignment in state.resource_allocation["assignments"]:
         assert assignment["zone"]
-    # knowledge_retrieval consumed risk_report + victim_map
-    assert state.knowledge_results["recommendations"]
+    # knowledge consumed resource_allocation (recommendations reference the plan)
+    assert any("deployed plan" in r for r in state.knowledge_results["recommendations"])
+    # rescue consumed every specialist report
+    assert state.rescue_guidance["priority_sequence"]
     assert state.resource_allocation["utilization"] >= 0
 
 
-def test_briefing_only_after_both_l2_reports():
+def test_briefing_only_after_rescue_report():
     mgr = make_manager()
     asyncio.run(run_executor(mgr))
     types = [e.type for e in mgr.state.timeline]
-    # agent_complete for L2 precedes the briefing_generator's agent_start.
-    l2_done = max(i for i, t in enumerate(types) if t == "agent_complete" and
-                  mgr.state.timeline[i].agent in ("resource_coordination", "knowledge_retrieval"))
+    # rescue_coordination completion precedes the briefing_generator's start.
+    rescue_done = max(
+        i for i, t in enumerate(types)
+        if t == "agent_complete" and mgr.state.timeline[i].agent == "rescue_coordination"
+    )
     briefing_start = next(
         i for i, e in enumerate(mgr.state.timeline)
         if e.type == "agent_start" and e.agent == "briefing_generator"
     )
-    assert l2_done < briefing_start
+    assert rescue_done < briefing_start
 
 
 def test_retry_then_success():
@@ -195,6 +210,7 @@ def test_retry_then_success():
             "victim_localization": ok_handler,
             "resource_coordination": ok_handler,
             "knowledge_retrieval": ok_handler,
+            "rescue_coordination": ok_handler,
             **BRIEFING,
         },
         config=ExecutorConfig(agent_timeout=10.0, max_retries=2, retry_backoff_base=0.0),
@@ -224,6 +240,7 @@ def test_retries_exhausted_then_fallback_caps_confidence():
             "victim_localization": ok_handler,
             "resource_coordination": ok_handler,
             "knowledge_retrieval": ok_handler,
+            "rescue_coordination": ok_handler,
             **BRIEFING,
         },
         config=ExecutorConfig(agent_timeout=10.0, max_retries=2, retry_backoff_base=0.0),
@@ -259,6 +276,7 @@ def test_fallback_disabled_errors_mission():
             "victim_localization": ok_handler,
             "resource_coordination": ok_handler,
             "knowledge_retrieval": ok_handler,
+            "rescue_coordination": ok_handler,
             **BRIEFING,
         },
         config=ExecutorConfig(
@@ -288,6 +306,7 @@ def test_level_failure_blocks_subsequent_levels():
             "victim_localization": ok_handler,
             "resource_coordination": ok_handler,
             "knowledge_retrieval": ok_handler,
+            "rescue_coordination": ok_handler,
             **BRIEFING,
         },
         config=ExecutorConfig(
@@ -317,6 +336,7 @@ def test_timeout_treated_as_failure_then_fallback():
             "victim_localization": ok_handler,
             "resource_coordination": ok_handler,
             "knowledge_retrieval": ok_handler,
+            "rescue_coordination": ok_handler,
             **BRIEFING,
         },
         config=ExecutorConfig(agent_timeout=0.05, max_retries=1, retry_backoff_base=0.0),
@@ -345,6 +365,7 @@ def test_cancel_stops_execution():
             "victim_localization": ok_handler,
             "resource_coordination": ok_handler,
             "knowledge_retrieval": ok_handler,
+            "rescue_coordination": ok_handler,
             **BRIEFING,
         },
         config=ExecutorConfig(agent_timeout=None),
@@ -387,6 +408,7 @@ def test_read_consistency_snapshot_is_deep_copy():
         "victim_localization": ok_handler,
         "resource_coordination": ok_handler,
         "knowledge_retrieval": ok_handler,
+        "rescue_coordination": ok_handler,
         **BRIEFING,
     }))
     # Mutating the snapshot must not leak into live state.
@@ -407,15 +429,26 @@ def test_context_carries_dependencies():
     mgr = make_manager()
     asyncio.run(run_executor(mgr, handlers={
         "risk_assessment": ok_handler,
-        "victim_localization": ok_handler,
-        "resource_coordination": spy,
+        "victim_localization": spy,
+        "resource_coordination": ok_handler,
         "knowledge_retrieval": ok_handler,
+        "rescue_coordination": ok_handler,
         **BRIEFING,
     }))
-    # resource_coordination depends on both L1 reports.
-    assert "risk_assessment" in captured["deps"]
-    assert "victim_localization" in captured["deps"]
+    # Each agent's context carries exactly its predecessor's report (the chain).
+    assert set(captured["deps"]) == {"risk_assessment"}
     assert captured["cycle"].startswith("CYC-")
+
+    captured.clear()
+    asyncio.run(run_executor(make_manager(), handlers={
+        "risk_assessment": ok_handler,
+        "victim_localization": ok_handler,
+        "resource_coordination": ok_handler,
+        "knowledge_retrieval": spy,
+        "rescue_coordination": ok_handler,
+        **BRIEFING,
+    }))
+    assert set(captured["deps"]) == {"resource_coordination"}
 
 
 def test_orchestrator_lifecycle_api_runs_graph():
@@ -474,7 +507,7 @@ def test_orchestrator_legacy_run_still_works():
     assert mb["total_victims_estimated"] == 3
     assert "B2" in mb["priority_zones"]
     assert state.status.stage == "completed"
-    assert len(state.agent_outputs) == 5  # 4 agents + briefing_generator
+    assert len(state.agent_outputs) == 6  # 5 agents + briefing_generator
 
 
 def test_custom_graph_scheduling_order():

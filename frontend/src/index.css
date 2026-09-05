@@ -3,12 +3,30 @@
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-}
+  /* Rajdhani: condensed technical display face for the HUD/command chrome */
+  --font-display: 'Rajdhani', 'Inter', sans-serif;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  /* Glass design tokens - modern glassmorphism */
+  --glass-lighter: rgba(255, 255, 255, 0.08);
+  --glass-normal: rgba(255, 255, 255, 0.05);
+  --glass-heavy: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  --glass-primary: rgba(59, 130, 246, 0.1);
+  --glass-success: rgba(34, 197, 94, 0.1);
+  --glass-warning: rgba(245, 158, 11, 0.1);
+  --glass-danger: rgba(239, 68, 68, 0.1);
+  --glass-purple: rgba(139, 92, 246, 0.1);
+
+  /* Blur levels */
+  --blur-light: blur(8px);
+  --blur-normal: blur(16px);
+  --blur-heavy: blur(24px);
+
+  /* Transitions */
+  --transition-fast: all 0.2s ease;
+  --transition-normal: all 0.3s ease;
+  --transition-slow: all 0.5s ease;
 }
 
 html {
@@ -16,7 +34,8 @@ html {
 }
 
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
+  height: auto;
 }
 
 body {
@@ -26,41 +45,492 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
 }
 
-::selection {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fafafa;
+/* ------------------------------------------------------------------ */
+/* Glassmorphism styles - enhanced layered glass effect */
+
+/* Neutral glass card - layered gradient with vibrant glow */
+.glass-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.045) 100%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.09) inset,
+    0 4px 30px -5px rgba(0, 0, 0, 0.4),
+    0 8px 40px -10px rgba(0, 0, 0, 0.5),
+    0 0 24px -8px rgba(34, 211, 238, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  position: relative;
 }
 
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.06) 28%,
+    rgba(255, 255, 255, 0.02) 62%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.24), transparent);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Soft glass - no edge ring for colored panels */
+.glass-soft {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.025) 100%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 4px 20px -5px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  position: relative;
+}
+
+.glass-soft::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Command bar variant */
+.glass-nav {
+  background: linear-gradient(180deg, rgba(9, 9, 11, 0.82) 0%, rgba(9, 9, 11, 0.6) 100%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  backdrop-filter: blur(32px) saturate(190%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 12px 40px -18px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.glass-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.4), transparent);
+  opacity: 0.7;
+}
+
+/* Enhanced glass hover states */
+.glass-interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.glass-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 8px 40px -10px rgba(0, 0, 0, 0.5),
+    0 0 25px rgba(59, 130, 246, 0.2);
+}
+
+.glass-interactive:active {
+  transform: translateY(0);
+}
+
+/* Enhanced scrollbar with cyan glow */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(9, 9, 11, 0.3);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.4), rgba(34, 197, 94, 0.4));
+  border-radius: 3px;
+  transition: all 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.6), rgba(34, 197, 94, 0.5));
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+.hud-flow-arrow {
+  stroke-dasharray: 6 5;
+  animation: hud-flow-dash 0.9s linear infinite;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+@keyframes hud-flow-dash {
+  to { stroke-dashoffset: -11; }
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+/* Cut-corner HUD button (used by the map zoom controls) */
+.tech-corner {
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+}
+
+/* ------------------------------------------------------------------ */
+/* MapLibre attribution / controls polish (live geo map)               */
+/* ------------------------------------------------------------------ */
+
+.maplibregl-ctrl-attrib {
+  background: rgba(9, 9, 11, 0.6) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+  font-size: 8px !important;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.maplibregl-ctrl-group {
+  background: rgba(9, 9, 11, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+
+.maplibregl-ctrl-group button {
+  background: rgba(9, 9, 11, 0.85) !important;
+  color: rgba(34, 211, 238, 0.85) !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: rgba(34, 211, 238, 0.15) !important;
+}
+
+.maplibregl-ctrl button .maplibregl-ctrl-icon {
+  filter: invert(70%) sepia(60%) saturate(600%) hue-rotate(140deg);
+}
+
+/* ------------------------------------------------------------------ */
+/* D.E.X.T.E.R. zone markers (crisp SVG-style HTML markers)            */
+/* ------------------------------------------------------------------ */
+
+.dexter-zone-marker {
+  width: 34px;
+  height: 34px;
+}
+
+.dz-ring {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--c, #22d3ee);
+  background: color-mix(in srgb, var(--c, #22d3ee) 14%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--c, #22d3ee) 45%, transparent);
+  animation: dz-pulse 2.4s ease-in-out infinite;
+}
+
+.dz-core {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+.dz-pct {
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: #fff;
+  background: rgba(9, 9, 11, 0.8);
+  padding: 0 3px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+@keyframes dz-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.08); opacity: 0.75; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dz-pulse { animation: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Live map: light geographic base + mission overlay markers           */
+/* ------------------------------------------------------------------ */
+
+/* The map container is never white — paper colour + subtle grid + place label
+   shows even before tiles load or if the tile CDN is unreachable. */
+.dm-map-bg {
+  background-color: #e7ebef;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.9) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.9) 1px, transparent 1px),
+    linear-gradient(to right, rgba(15,23,42,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15,23,42,0.06) 1px, transparent 1px);
+  background-size: 90px 90px, 90px 90px, 90px 90px, 90px 90px;
+  position: relative;
+}
+.dm-map-bg::before {
+  content: 'Coimbatore · Disaster Site';
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(15,23,42,0.35);
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(15,23,42,0.08);
+  padding: 2px 6px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 1;
+}
+.dm-map-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 70%, rgba(169,212,245,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 75%, rgba(207,232,182,0.4) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Shared mission marker shell — clean, minimal, no neon glow. */
+.dm-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.dm-emoji {
+  font-size: 18px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+.dm-tag {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: #0b1220;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0 3px;
+  border-radius: 3px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Victim detection */
+.dm-victim .dm-emoji { font-size: 17px; }
+
+/* Rover — distinct, with a small pill label */
+.dm-rover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.dm-rover-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1f2937;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.dm-rover-pin .dm-emoji { font-size: 16px; }
+.dm-rover-label {
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  background: rgba(31, 41, 55, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 1px 5px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Risk zone — translucent severity disc */
+.dm-risk {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+  border: 1.5px solid var(--c, #22c55e);
+  background: color-mix(in srgb, var(--c, #22c55e) 16%, transparent);
+  box-shadow: inset 0 0 24px color-mix(in srgb, var(--c, #22c55e) 22%, transparent);
+}
+.dm-risk-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--c, #22c55e);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--c, #22c55e) 40%, transparent);
+}
+
+/* Search area — dashed perimeter ring */
+.dm-search {
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 2px dashed rgba(37, 99, 235, 0.55);
+  background: rgba(37, 99, 235, 0.06);
+}
+.dm-search-label {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: #1d4ed8;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  padding: 0 5px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Hazard chip (gas / thermal) */
+.dm-hazard {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Awaiting-mission empty-state pill */
+.dm-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 500;
+}
+.dm-empty-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 7px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+}
+.dm-empty-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+/* Layer-control popover */
+.dm-layer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+  transition: background 0.15s ease;
+}
+.dm-layer-row:hover { background: rgba(255, 255, 255, 0.06); }
+.dm-layer-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dm-layer-check.on { background: #3b82f6; border-color: #3b82f6; }
+
+/* Header sensor tags */
+.dm-tag-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid;
 }

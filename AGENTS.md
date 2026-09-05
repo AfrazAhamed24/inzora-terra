@@ -5,6 +5,7 @@
 - **Victim Localization Agent**: Locates victims by zone probability
 - **Resource Coordination Agent**: Allocates teams and equipment
 - **Knowledge Retrieval Agent (Prototype)**: Queries SOPs and building codes (not RAG)
+- **Rescue Coordination Agent**: Synthesizes all specialist reports into field-ready rescue guidance (entry clearance, priority sequence, extraction techniques, safety constraints, triage, comms)
 - **Orchestrator**: Coordinates all agents, produces mission briefing
 
 ## Communication Protocol

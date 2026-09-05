@@ -82,6 +82,7 @@ class BriefingGenerator:
         ]
         knowledge = state.knowledge_results
         resources = state.resource_allocation
+        rescue = state.rescue_guidance
         pending = sum(1 for d in state.human_decisions if d.status == "pending")
 
         mission_briefing = {
@@ -93,6 +94,16 @@ class BriefingGenerator:
             "resource_status": "Deployed" if resources.get("assignments") else "Pending",
             "next_update_in": "15 minutes",
             "overall_confidence": aggregate_confidence(state),
+            "rescue_guidance": {
+                "summary": rescue.get("summary", ""),
+                "entry_clearance": rescue.get("entry_clearance", "HOLD"),
+                "priority_sequence": rescue.get("priority_sequence", []),
+                "objectives": rescue.get("objectives", []),
+                "extraction_guidance": rescue.get("extraction_guidance", []),
+                "safety_constraints": rescue.get("safety_constraints", []),
+                "triage_notes": rescue.get("triage_notes", []),
+                "comms_guidance": rescue.get("comms_guidance", ""),
+            },
         }
         return MissionSummary(
             mission_briefing=mission_briefing,
