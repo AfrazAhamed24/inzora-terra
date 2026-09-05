@@ -1,10 +1,15 @@
 {
   "$schema": "https://opencode.ai/config.json",
-
   "model": "groq/llama-3.3-70b-versatile",
-  "instructions": ["AGENTS.md", "docs/DESIGN.md", "MEMORY.md"],
+  "instructions": [
+    "AGENTS.md",
+    "docs/DESIGN.md",
+    "MEMORY.md"
+  ],
   "skills": {
-    "paths": [".opencode/skills"]
+    "paths": [
+      ".opencode/skills"
+    ]
   },
   "agent": {
     "risk-assessment": {
@@ -32,5 +37,6 @@
       "description": "Coordinates all agents, produces unified output",
       "model": "groq/llama-3.3-70b-versatile"
     }
-  }
+  },
+  "snapshot": false
 }
