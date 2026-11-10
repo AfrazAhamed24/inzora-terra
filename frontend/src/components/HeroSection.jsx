@@ -1,11 +1,9 @@
 /**
- * HeroSection - Mission status hero with drowning momentum effect.
+ * HeroSection - mission status overview.
  *
- * Connected to live: environment/sensor data from telemetry endpoint.
- * Features a slowly drowning background with momentum-based parallax motion.
+ * Connected to mission telemetry when available. Defaults are marked as demo state.
  *
- * D.E.X.T.E.R (Disaster Emergency eXtraction & Threat Elimination Response)
- * provides the system intelligence overlay.
+ * Keeps the primary focus on mission status, sensors, and authorization state.
  */
 
 import { useMemo } from 'react'
@@ -89,9 +87,9 @@ function HeroSection() {
       {/* Neural tactical backdrop */}
       <NeuralBackdrop dense={isActiveRunning} />
 
-      {/* Drowning momentum background layers */}
+        {/* Subtle background layers */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Slow drift layer - creates the drowning feel */}
+          {/* Slow drift layer */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f] via-[#09090b] to-[#04050a]"
           animate={{
@@ -163,7 +161,7 @@ function HeroSection() {
           ))}
         </div>
 
-        {/* D.E.X.T.E.R watermark - subtle, drowning into background */}
+        {/* Product watermark */}
         <motion.div
           className="absolute bottom-8 right-8 text-[140px] font-display font-bold tracking-[0.1em] pointer-events-none"
           style={{
@@ -178,7 +176,7 @@ function HeroSection() {
           }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         >
-          DEXTER
+          TERRA
         </motion.div>
       </div>
 
@@ -220,7 +218,7 @@ function HeroSection() {
           transition={{ duration: 0.8, delay: 0.1 }}
           className="mb-5 font-display text-5xl font-semibold tracking-[-0.03em] md:text-7xl lg:text-8xl"
         >
-          D<span className="text-white/30">.</span>E<span className="text-white/30">.</span>X<span className="text-white/30">.</span>T<span className="text-white/30">.</span>E<span className="text-white/30">.</span>R
+          Inzora Terra OS
         </motion.h1>
 
         <motion.p
@@ -229,7 +227,7 @@ function HeroSection() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-3 text-sm font-display font-medium tracking-[0.32em] text-white/50 uppercase"
         >
-          Disaster Emergency Extraction & Threat Elimination Response
+          Disaster Response Mission Control
         </motion.p>
 
         <motion.p
@@ -238,7 +236,7 @@ function HeroSection() {
           transition={{ duration: 0.8, delay: 0.25 }}
           className="mb-12 text-[10px] font-mono tracking-[0.25em] text-white/25 uppercase"
         >
-          Orchestrating risk · victim · resource · knowledge · rescue agents
+          Risk · victim · resource · knowledge · rescue coordination
         </motion.p>
 
         {/* Sensor badges with enhanced glass effect */}

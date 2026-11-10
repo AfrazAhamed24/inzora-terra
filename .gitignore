@@ -3,6 +3,19 @@
 .env.*
 !.env.example
 
+# Local/generated project artifacts
+.freebuff/
+.kilo/
+.agents/
+*.db
+*.db-shm
+*.db-wal
+*.zip
+*.pt
+*.err
+pytest_output.txt
+build_output.txt
+
 # Python
 __pycache__/
 *.py[cod]
@@ -10,12 +23,17 @@ __pycache__/
 .venv/
 venv/
 *.log
+.pytest_cache/
 
 # Node
 node_modules/
 dist/
 dist-ssr/
 *.local
+.vite/
+
+# Generated presentation files
+ppt/*.pptx
 
 # Editor
 .vscode/*

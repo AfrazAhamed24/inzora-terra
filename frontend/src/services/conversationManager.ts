@@ -1,5 +1,5 @@
 /**
- * ConversationManager - D.E.X.T.E.R's conversational dialogue controller.
+ * ConversationManager - voice control dialogue controller.
  *
  * Manages the step-by-step interaction flow after the wake word:
  *   ACTIVATED → BRIEFING → AWAITING_SCAN_APPROVAL → SCANNING →
@@ -7,7 +7,7 @@
  *   AWAITING_DEPLOYMENT_APPROVAL → DEPLOYING → MISSION_ACTIVE → COMPLETED
  *
  * Each phase has associated dialogue. Commands advance the conversation.
- * D.E.X.T.E.R. never auto-executes — every step requires explicit approval.
+ * Voice control never auto-executes — every step requires explicit approval.
  */
 
 export type ConversationPhase =
@@ -49,13 +49,13 @@ function isRestart(text: string): boolean {
 
 const PHASE_DIALOGUE: Record<string, { enter: string; [key: string]: string }> = {
   ACTIVATED: {
-    enter: "Yes, Commander. I'm D.E.X.T.E.R. — Disaster eXtraction, Terrain Evaluation & Rescue. Systems are online. Shall I begin the scan?",
+    enter: 'Voice control is ready. Mission systems are standing by. Shall I begin the scenario check?',
   },
   BRIEFING: {
     enter: "Systems are online. I can scan for terrain conditions, survivors, hazards, and rescue routes. Shall I begin?",
   },
   AWAITING_SCAN_APPROVAL: {
-    enter: 'Standing by, Commander.',
+    enter: 'Standing by.',
   },
   SCANNING: {
     enter: 'Scan initiated.',
@@ -83,7 +83,7 @@ const PHASE_DIALOGUE: Record<string, { enter: string; [key: string]: string }> =
     enter: 'Engine active.',
   },
   COMPLETED: {
-    enter: 'Mission complete, Commander.',
+    enter: 'Mission complete.',
   },
   STANDING_BY: {
     enter: 'Standing by.',
@@ -111,7 +111,7 @@ export class ConversationManager {
     if (isRestart(text) && this.phase !== 'IDLE') {
       this.phase = 'IDLE'
       return {
-        dialogue: 'Mission reset. Ready when you are, Commander.',
+        dialogue: 'Mission reset. Ready when authorized.',
         phase: this.phase,
       }
     }
@@ -208,7 +208,7 @@ export class ConversationManager {
     if (isApproval(text)) {
       this.phase = 'SCANNING'
       return {
-        dialogue: 'Understood, Commander. Initiating environmental scan.',
+        dialogue: 'Understood. Initiating scenario check.',
         phase: this.phase,
       }
     }
@@ -229,7 +229,7 @@ export class ConversationManager {
     if (isApproval(text)) {
       this.phase = 'SCANNING'
       return {
-        dialogue: 'Understood, Commander. Initiating environmental scan.',
+        dialogue: 'Understood. Initiating scenario check.',
         phase: this.phase,
       }
     }
@@ -250,7 +250,7 @@ export class ConversationManager {
     if (isDecline(text)) {
       this.phase = 'STANDING_BY'
       return {
-        dialogue: 'Operation paused. Standing by, Commander.',
+        dialogue: 'Operation paused. Standing by.',
         phase: this.phase,
       }
     }
@@ -306,7 +306,7 @@ export class ConversationManager {
   private respondDefault(text: string): ConversationResult {
     if (!text) {
       return {
-        dialogue: "I'm listening, Commander.",
+        dialogue: 'Listening for mission command.',
         phase: this.phase,
       }
     }

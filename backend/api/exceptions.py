@@ -64,6 +64,11 @@ class ApiConfigError(ApiError):
     code = "api_config_error"
 
 
+class ApiAuthError(ApiError):
+    http_status = 401
+    code = "api_auth_error"
+
+
 def http_error(status: int) -> Any:
     """Return a FastAPI-compatible dict body for a plain HTTP error."""
     return {"detail": f"HTTP {status}", "code": f"http_{status}", "status_code": status}

@@ -78,7 +78,7 @@ export function fetchDecisions(missionId: string): Promise<HumanDecision[]> {
   return get<HumanDecision[]>(`/missions/${missionId}/decisions`)
 }
 
-/** Resolve a pending decision as the Commander (approve or override) */
+/** Resolve a pending human decision (approve or override) */
 export function resolveDecision(
   missionId: string,
   decisionId: string,

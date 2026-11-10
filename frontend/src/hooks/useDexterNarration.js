@@ -1,8 +1,8 @@
 /**
- * useDexterNarration - Speech-decision layer for D.E.X.T.E.R.
+ * useDexterNarration - speech-decision layer for mission alerts.
  *
- * D.E.X.T.E.R. does NOT narrate every agent state. The UI shows system activity.
- * D.E.X.T.E.R. speaks ONLY when the Commander needs to hear something.
+ * The system does not narrate every agent state. The UI shows system activity.
+ * Voice speaks only when human authorization is required.
  *
  * Speech is event-driven with priority:
  *   PRIORITY 1 — CRITICAL: Probable survivor, hazard, danger, failure
@@ -26,7 +26,7 @@ export function useDexterNarration() {
 
   const hitlAnnounced = useRef(false)
 
-  // Authorization required — D.E.X.T.E.R. MUST speak when human approval is needed.
+  // Authorization required — voice must speak when human approval is needed.
   // This is the one automatic speech trigger that is always appropriate.
   useEffect(() => {
     if (stage !== 'awaiting_confirmation' || hitlAnnounced.current) return
@@ -38,9 +38,9 @@ export function useDexterNarration() {
     const pending = decisions.filter((d) => d.status === 'pending')
     if (pending.length > 0) {
       const summary = pending[0].summary || 'a resource deployment'
-      voice.speak(`Commander, I need your authorization. ${summary}.`)
+      voice.speak(`Authorization required. ${summary}.`)
     } else {
-      voice.speak('Commander, I need your authorization to proceed with deployment.')
+      voice.speak('Authorization required to proceed with deployment.')
     }
   }, [stage, state.decisions])
 }

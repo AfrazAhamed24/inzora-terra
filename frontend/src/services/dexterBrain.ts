@@ -1,12 +1,11 @@
 /**
- * DexterBrain - D.E.X.T.E.R's conversational intelligence.
+ * DexterBrain - local rule-based mission query logic.
  *
- * Personality: 70% composed intelligence, 20% subtle warmth, 10% authority.
- * Answers are concise, natural, and grounded in real mission state.
+ * Answers are concise and derived from available mission state.
  * Uses live telemetry, agent progress, and the briefing — in that priority
  * order — so the commander always gets a grounded, specific answer.
  * Never dumps internal logs. Never narrates agent states.
- * Speaks only what the Commander needs to hear.
+ * Speaks only operationally useful status.
  */
 
 import type {
@@ -44,7 +43,7 @@ function briefingOf(ctx: DexterContext): Record<string, unknown> {
 }
 
 /**
- * Domain glossary — D.E.X.T.E.R's standing knowledge base.
+ * Domain glossary for local informational answers.
  * Used ONLY to answer informational questions (info ≠ action): the assistant
  * explains a term without activating any agent, mission, or tool. This is real
  * knowledge content, not simulated operational state.
@@ -61,7 +60,7 @@ const GLOSSARY: Record<string, string> = {
   'search and rescue': 'Search and rescue — SAR — locates, stabilizes, and extracts survivors from a disaster zone under a coordinated plan.',
   sar: 'Search and rescue — SAR — locates, stabilizes, and extracts survivors from a disaster zone under a coordinated plan.',
   rover: 'The rover is our field platform: it carries sensors and, when deployed, executes the route the orchestrator calculates.',
-  'dexter': "D.E.X.T.E.R. stands for Disaster eXtraction, Terrain Evaluation & Rescue — your rescue-intelligence operating system.",
+  'dexter': 'The voice/query layer is a local control surface for Inzora Terra OS. It is rule-based in this prototype.',
 }
 
 /** Answer an informational "what is X" question from the glossary, or null if not a glossary query. */
@@ -150,7 +149,7 @@ function riskFromLive(live: Record<string, TelemetryPacket> | undefined): string
 
 export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
   const q = rawQuery.toLowerCase().trim()
-  if (!q) return "I'm here, Commander."
+  if (!q) return 'Voice control is ready.'
 
   const briefing = briefingOf(ctx)
   const mission = ctx.mission
@@ -160,12 +159,12 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
 
   // Greetings
   if (/^(hi|hello|hey|good (morning|evening|afternoon))/.test(q)) {
-    return "Good to hear from you, Commander. What do you need?"
+    return 'Voice control is ready. What mission status do you need?'
   }
 
   // Identity
   if (/^(who are you|what are you|what's your name)/.test(q)) {
-    return "I'm D.E.X.T.E.R. — Disaster eXtraction, Terrain Evaluation & Rescue. Your rescue-intelligence system."
+    return 'This is the local voice and query layer for Inzora Terra OS. It answers from current mission state and prototype rules.'
   }
 
   // Informational knowledge request — explain a term, do NOT activate anything.
@@ -176,7 +175,7 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
 
   // Status — concise operational summary
   if (/(status|how are you|what's happening|what's going on|update|how are we doing|mission status)/.test(q)) {
-    if (!mission) return 'Systems are standing by, Commander.'
+    if (!mission) return 'Systems are standing by.'
 
     const risk = briefing.overall_risk
     const zones = briefing.priority_zones
@@ -209,7 +208,7 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
       return parts.join('. ') + '.'
     }
 
-    return 'Systems are standing by, Commander.'
+    return 'Systems are standing by.'
   }
 
   // Risk
@@ -308,7 +307,7 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
 
   // Findings
   if (/(what did you find|what have you found|what.*(found|detected|discovered|located)|any (survivors|signals|findings)|your (findings|results)|what.*result|what did the (scan|search) show)/.test(q)) {
-    if (!mission || !mission.is_running) return 'No operation is active yet, Commander. Authorize the mission to begin the search.'
+    if (!mission || !mission.is_running) return 'No operation is active yet. Authorize the mission to begin the search.'
 
     // Use briefing if available
     const total = briefing.total_victims_estimated
@@ -336,7 +335,7 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
 
   // Mission progress
   if (/(mission|stage|phase|progress|where are we)/.test(q)) {
-    if (!mission) return 'No active mission, Commander.'
+    if (!mission) return 'No active mission.'
     if (mission.is_running) {
       const parts: string[] = [`Stage: ${stageLabel(stage)}.`]
       const done = ctx.agents.filter((a) => a.status === 'completed')
@@ -361,7 +360,7 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
 
   // Thanks
   if (/(thank|appreciate|good|nice)/.test(q)) {
-    return 'At your service, Commander.'
+    return 'Voice control is ready.'
   }
 
   // Help
@@ -372,7 +371,7 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
   // Stop mission
   if (/(stop|halt|pause|abort)/.test(q)) {
     if (mission?.is_running) {
-      return { kind: 'action' as const, action: 'stop_mission' as const, text: 'Mission halted, Commander.' }
+      return { kind: 'action' as const, action: 'stop_mission' as const, text: 'Mission halted.' }
     }
     return 'No active mission to stop.'
   }
@@ -435,7 +434,7 @@ export function answerQuestion(rawQuery: string, ctx: DexterContext): string {
     return 'Sensor data is flowing but no anomalies detected yet.'
   }
 
-  return "I don't have that information yet, Commander. Ask me about risk, victims, zones, sensors, or mission status."
+  return "I don't have that information yet. Ask about risk, victims, zones, sensors, or mission status."
 }
 
 /**
@@ -448,7 +447,7 @@ export function handleVoiceCommand(raw: string, ctx: DexterContext): DexterComma
     .trim()
   const q = cleaned.toLowerCase()
 
-  // Wake word alone — the voice hook already spoke "Yes, Commander?"
+  // Wake word alone — the voice hook already acknowledged readiness.
   // If nothing is running, start the mission
   if (!cleaned) {
     if (!ctx.mission || !ctx.mission.is_running) {
@@ -466,7 +465,7 @@ export function handleVoiceCommand(raw: string, ctx: DexterContext): DexterComma
   // Start mission
   if (/^(run|start|launch|begin|execute|initialize|scan|deploy|go|initiate)(\s|$)/.test(q) ||
       /(run|start|launch|begin|execute|initialize|scan|initiate|deploy)\s*(the\s*)?(mission|process|rescue|dexter|operation|sequence)/.test(q)) {
-    return { kind: 'action', action: 'start_mission', text: 'Understood, Commander.' }
+    return { kind: 'action', action: 'start_mission', text: 'Understood.' }
   }
 
   // Open assistant

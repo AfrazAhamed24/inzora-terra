@@ -28,7 +28,7 @@ def install_middleware(app: FastAPI, *, cors_origins: list[str]) -> None:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
-        allow_credentials=True,
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )

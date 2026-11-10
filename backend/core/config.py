@@ -158,6 +158,7 @@ class ApiSettings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 8000
     cors_origins: List[str] = ["http://localhost:5173"]
+    operator_key: str = ""
 
     model_config = SettingsConfigDict(
         env_prefix="TERRA_API_", env_file=".env", extra="ignore"

@@ -2,8 +2,7 @@
  * Nav - Mission status command bar (glassmorphic).
  *
  * Connected to live: risk level, agent count, mission stage and connection status.
- * The brand is D.E.X.T.E.R — the disaster response system. Terra X is the chatbot
- * surface, not the system name.
+ * The brand is Inzora Terra OS. Assistant surfaces stay secondary to mission state.
  */
 
 import { useEffect, useState } from 'react'
@@ -80,7 +79,7 @@ function Nav() {
           </div>
           <div className="min-w-0 leading-none">
             <div className="font-display text-sm font-semibold tracking-[0.22em] text-white/90">
-              D<span className="text-cyan-400/50">.</span>E<span className="text-cyan-400/50">.</span>X<span className="text-cyan-400/50">.</span>T<span className="text-cyan-400/50">.</span>E<span className="text-cyan-400/50">.</span>R
+              INZORA TERRA OS
             </div>
             <div className="mt-1 truncate font-mono text-[9px] tracking-[0.2em] text-white/30 uppercase">
               {state.mission ? state.mission.mission_id : 'Command Uplink · Standby'}

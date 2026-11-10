@@ -1,5 +1,5 @@
 /**
- * MissionEngineStatus - JARVIS-style engine status bar.
+ * MissionEngineStatus - compact mission lifecycle status bar.
  *
  * Displays the current mission execution state driven by real backend events,
  * not artificial timers. States map to actual orchestrator lifecycle stages.
@@ -29,8 +29,8 @@ function stageToDisplay(stage, isRunning) {
 }
 
 const STATUS_CONFIG = {
-  IDLE: { label: 'D.E.X.T.E.R ENGINE — STANDBY', color: '#6b7280', pulse: false },
-  INITIALIZING: { label: 'DEXTER ENGINE — INITIALIZING', color: '#f59e0b', pulse: true },
+  IDLE: { label: 'MISSION ENGINE — STANDBY', color: '#6b7280', pulse: false },
+  INITIALIZING: { label: 'MISSION ENGINE — INITIALIZING', color: '#f59e0b', pulse: true },
   RUNNING: { label: 'MISSION PROCESS — ACTIVE', color: '#22d3ee', pulse: true },
   SYNTHESIS: { label: 'MISSION SYNTHESIS — COMPILING', color: '#a78bfa', pulse: true },
   BRIEFING: { label: 'MISSION BRIEFING — READY', color: '#22c55e', pulse: false },

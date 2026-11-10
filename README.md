@@ -10,10 +10,15 @@ See `BLUEPRINT.md` for the full product definition (the single source of truth).
 ## Repository Layout
 
 ```
-backend/    Python multi-agent pipeline (CLI entry: python -m backend.run)
-frontend/   React + Vite command-center UI
-docs/       Design, tool, and workflow documentation
+backend/          Python multi-agent pipeline (CLI entry: python -m backend.run)
+frontend/         React + Vite command-center UI
+docs/             Design, workflow, specs, and archived/frontend notes
+ppt/              Presentation content and generator script
+vision-prototype/ Standalone INZORA-X vision system (not wired into the mission flow)
 ```
+
+`BLUEPRINT.md`, `AGENTS.md`, `MEMORY.md`, and `opencode.json` stay at the repository root
+because they are the product source of truth and tool configuration.
 
 ## Backend
 

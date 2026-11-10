@@ -1,5 +1,5 @@
 /**
- * useVoiceCommand - Conversational voice interaction for D.E.X.T.E.R.
+ * useVoiceCommand - conversational voice interaction.
  *
  * State machine:
  *   IDLE → LISTENING → WAKE_WORD_DETECTED → ACKNOWLEDGING →
@@ -8,7 +8,7 @@
  * During CONVERSING:
  *   - Mic remains active for follow-up commands
  *   - Each utterance is routed through ConversationManager
- *   - D.E.X.T.E.R. speaks responses and advances phases
+ *   - Voice control speaks responses and advances phases
  *   - No wake word needed between exchanges
  *
  * Critical invariants:
@@ -168,7 +168,7 @@ export function useVoiceCommand({ onCommand }) {
             if (stateRef.current === VoiceState.ACKNOWLEDGING) {
               transition(VoiceState.EXPLAINING_NAME)
               voice.speak(
-                "I'm D.E.X.T.E.R. — Disaster eXtraction, Terrain Evaluation & Rescue. All core systems are standing by. Shall I begin the environmental scan?",
+                'Voice control is ready. The mission engine is standing by. Shall I begin the scenario check?',
                 { interrupt: true }
               )
             }
@@ -252,7 +252,7 @@ export function useVoiceCommand({ onCommand }) {
             } else {
               // Wake word only: acknowledge, then explain identity, then listen
               transition(VoiceState.ACKNOWLEDGING)
-              voice.speak('Yes, Commander?', { interrupt: true })
+              voice.speak('Voice control ready.', { interrupt: true })
             }
             return
           }

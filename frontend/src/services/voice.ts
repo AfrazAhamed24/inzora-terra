@@ -1,5 +1,5 @@
 /**
- * VoiceDirector - D.E.X.T.E.R's voice layer.
+ * VoiceDirector - browser voice prompt layer.
  *
  * Zero-dependency: uses the Web Speech API (speechSynthesis + SpeechRecognition) and
  * Web Audio for UI sounds. Everything degrades gracefully when unsupported or muted.
@@ -60,7 +60,7 @@ class VoiceDirector {
       window.addEventListener?.('pagehide', () => this.stop())
 
       // Browsers block speechSynthesis until a user gesture occurs (autoplay policy).
-      // Prime the engine on the first click/keydown so the first D.E.X.T.E.R line is audible.
+      // Prime the engine on the first click/keydown so the first voice prompt is audible.
       const unlock = () => {
         this.prime()
         window.removeEventListener('pointerdown', unlock)
@@ -110,7 +110,7 @@ class VoiceDirector {
     return typeof window !== 'undefined' && 'speechSynthesis' in window
   }
 
-  /** Watch what D.E.X.T.E.R is currently saying (drives the caption strip). */
+  /** Watch current voice output (drives the caption strip). */
   subscribe(listener: VoiceListener): () => void {
     this.listeners.add(listener)
     return () => {
@@ -384,7 +384,7 @@ class VoiceDirector {
     osc.stop(now + dur + 0.05)
   }
 
-  /** A brief ambient sweep (cinematic transition). */
+  /** A brief ambient sweep for UI transitions. */
   sweep(freqFrom = 200, freqTo = 900, dur = 0.7): void {
     if (this.muted) return
     const ctx = this.ctx()

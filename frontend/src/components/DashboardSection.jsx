@@ -1,20 +1,16 @@
 /**
  * DashboardSection — Live geospatial intelligence map.
  *
- * D.E.X.T.E.R. MAP: a real-world, Google-Maps-readable interactive map built on MapLibre GL JS.
- * A clean light geographic basemap (roads, place names, terrain) is the foundation; D.E.X.T.E.R.
- * disaster intelligence is layered cleanly on top — rover, victim detections, risk zones, hazard
- * markers and rescue resources — every marker bound to REAL mission state (telemetry + agent
- * reports). No coordinates, victims, hazards or routes are invented: the backend stays the source
- * of truth. The site-zone geometry below is the single legitimate known site layout.
+ * Mission map: MapLibre basemap plus the known demo site layout. Telemetry and reports come from
+ * MissionContext; fixed zone coordinates below are scenario geometry, not field-survey data.
  *
  * Single MapLibre instance, multiple view modes (no map recreation). All data is consumed
- * read-only from MissionContext. D.E.X.T.E.R. core, voice and conversational flow are untouched.
+ * read-only from MissionContext. Voice and query controls are handled outside this map.
  */
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Crosshair, X, Activity, Navigation, Search, Satellite, Map as MapIcon, Layers, LocateFixed } from 'lucide-react'
 import { useMissionContext } from '@/context/MissionContext'
@@ -240,6 +236,18 @@ function waveHeights(seed) {
     const v = Math.abs(Math.sin(seed * 7.3 + i * 1.7)) * 0.9 + 0.1
     return v
   })
+}
+
+/**
+ * Create an element for a MapLibre marker. Marker content is built from DOM nodes
+ * (never innerHTML) because team names, hazard labels and agent report strings flow
+ * in from the backend and must stay inert text, not markup.
+ */
+function ce(tag, className, text) {
+  const node = document.createElement(tag)
+  if (className) node.className = className
+  if (text != null) node.textContent = String(text)
+  return node
 }
 
 function LegendItem({ color, label }) {
@@ -652,11 +660,12 @@ function DashboardSection() {
       if (entry.pct === pct && entry.color === z.color) continue
       entry.pct = pct
       entry.color = z.color
-      entry.el.innerHTML = `
-        <div class="dz-ring" style="--c:${z.color}">
-          <div class="dz-core" style="background:${z.color}"></div>
-          <span class="dz-pct">${pct}%</span>
-        </div>`
+      const ring = ce('div', 'dz-ring')
+      ring.style.setProperty('--c', z.color)
+      const core = ce('div', 'dz-core')
+      core.style.background = z.color
+      ring.append(core, ce('span', 'dz-pct', `${pct}%`))
+      entry.el.replaceChildren(ring)
     }
 
     /* Damaged-structure marker at the worst zone (Risk layer). */
@@ -670,7 +679,9 @@ function DashboardSection() {
         d = { marker, el }
         g.risk['damaged'] = d
       }
-      d.el.innerHTML = `<div class="dm-emoji" title="Damaged structure">🏚️</div>`
+      const damaged = ce('div', 'dm-emoji', '🏚️')
+      damaged.title = 'Damaged structure'
+      d.el.replaceChildren(damaged)
       d.marker.setLngLat([worst.lng, worst.lat])
     } else if (g.risk['damaged']) {
       g.risk['damaged'].marker.remove(); delete g.risk['damaged']
@@ -694,9 +705,10 @@ function DashboardSection() {
       const sig = `${v.confidence}`
       if (entry.sig === sig) continue
       entry.sig = sig
-      entry.el.innerHTML = `
-        <div class="dm-emoji">🧍</div>
-        <div class="dm-tag">${Math.round(v.confidence * 100)}%</div>`
+      entry.el.replaceChildren(
+        ce('div', 'dm-emoji', '🧍'),
+        ce('div', 'dm-tag', `${Math.round(v.confidence * 100)}%`)
+      )
     }
 
     /* Rescue resources (Rescue Resources layer). */
@@ -717,7 +729,9 @@ function DashboardSection() {
       const sig = `${r.team}-${r.type}`
       if (entry.sig === sig) continue
       entry.sig = sig
-      entry.el.innerHTML = `<div class="dm-emoji" title="${r.team} · ${r.type}">🚑</div>`
+      const resource = ce('div', 'dm-emoji', '🚑')
+      resource.title = `${r.team} · ${r.type}`
+      entry.el.replaceChildren(resource)
     }
 
     /* Hazard markers (Gas / Thermal layers). */
@@ -738,7 +752,10 @@ function DashboardSection() {
       if (entry.sig === h.label) continue
       entry.sig = h.label
       entry.kind = h.kind
-      entry.el.innerHTML = `<div class="dm-hazard" title="${h.title}"><span class="dm-emoji">${h.emoji}</span></div>`
+      const hazard = ce('div', 'dm-hazard')
+      hazard.title = h.title
+      hazard.append(ce('span', 'dm-emoji', h.emoji))
+      entry.el.replaceChildren(hazard)
     }
 
     /* Search area perimeter (Search Area layer). */
@@ -746,10 +763,9 @@ function DashboardSection() {
       if (!g.search) {
         const el = document.createElement('div')
         el.className = 'dm-marker'
-        el.innerHTML = `
-          <div class="dm-search">
-            <span class="dm-search-label">SEARCH AREA</span>
-          </div>`
+        const box = ce('div', 'dm-search')
+        box.append(ce('span', 'dm-search-label', 'SEARCH AREA'))
+        el.replaceChildren(box)
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([SITE_CENTER.lng, SITE_CENTER.lat]).addTo(map)
         g.search = { marker, el }
       }
@@ -762,9 +778,9 @@ function DashboardSection() {
       if (!g.rover) {
         const el = document.createElement('div')
         el.className = 'dm-marker dm-rover'
-        el.innerHTML = `
-          <div class="dm-rover-pin"><span class="dm-emoji">🤖</span></div>
-          <div class="dm-rover-label">DEXTER ROVER · LIVE</div>`
+        const pin = ce('div', 'dm-rover-pin')
+        pin.append(ce('span', 'dm-emoji', '🤖'))
+        el.replaceChildren(pin, ce('div', 'dm-rover-label', 'ROVER · LIVE'))
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([roverPosRef.current.lng, roverPosRef.current.lat]).addTo(map)
         g.rover = { marker, el }
       }
@@ -835,7 +851,7 @@ function DashboardSection() {
             <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
               <div className="flex items-center gap-2.5">
                 <Crosshair className="w-4 h-4 text-blue-400/70" />
-                <h3 className="text-sm font-display font-semibold text-white/80 tracking-[0.12em]">D.E.X.T.E.R. Map</h3>
+                <h3 className="text-sm font-display font-semibold text-white/80 tracking-[0.12em]">Mission Map</h3>
                 <span className={`text-[10px] font-display font-semibold tracking-[0.2em] flex items-center gap-1.5 ${isLive ? 'text-emerald-400/80' : 'text-white/35'}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-white/30'}`} />
                   {isLive ? 'LIVE' : 'STANDBY'}

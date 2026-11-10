@@ -1,5 +1,5 @@
 /**
- * NeuralBackdrop - JARVIS-style neural network backdrop for cinematic surfaces.
+ * NeuralBackdrop - subtle animated background for high-level status surfaces.
  *
  * Pure SVG/CSS (no image assets): a deterministic neural mesh with travelling data
  * pulses, a perspective grid "floor" scrolling toward the viewer, drifting scanlines,
@@ -67,7 +67,7 @@ export default function NeuralBackdrop({ className = '', dense = false }) {
         }}
       />
 
-      {/* Neural mesh — slowly sinks downward ("drowning" momentum); oversized so
+      {/* Animated mesh; oversized so
           the drift never exposes an edge. */}
       <div className="absolute -inset-[10%] nb-drift" aria-hidden="true">
       <svg className="absolute inset-0 w-full h-full opacity-70" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice">
@@ -154,7 +154,7 @@ export default function NeuralBackdrop({ className = '', dense = false }) {
         }}
       />
 
-      {/* Submerge pool — breathing darkness rising from below, the drowning pull */}
+      {/* Low-contrast base gradient */}
       <div
         className="absolute inset-x-0 bottom-0 h-[58%] nb-submerge"
         style={{

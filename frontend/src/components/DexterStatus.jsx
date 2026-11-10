@@ -1,7 +1,7 @@
 /**
- * DexterStatus - JARVIS-style caption strip with voice state indicators.
+ * DexterStatus - caption strip with voice state indicators.
  *
- * Shows whatever D.E.X.T.E.R is currently saying as a subtitle, bottom-center,
+ * Shows current voice output as a subtitle, bottom-center,
  * plus the current voice interaction state (LISTENING, THINKING, SPEAKING, etc.)
  */
 
@@ -83,7 +83,7 @@ export default function DexterStatus({ voiceState = VoiceState.IDLE }) {
             {/* State label */}
             {showState && (
               <div className={`text-[10px] font-display font-semibold tracking-[0.24em] ${colors.text} uppercase mb-0.5`}>
-                D.E.X.T.E.R · {config.label}
+                Voice · {config.label}
               </div>
             )}
             {/* Caption text */}

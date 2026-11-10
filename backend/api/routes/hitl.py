@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends
 
-from backend.api.dependencies import get_mission_service
+from backend.api.dependencies import get_mission_service, require_operator
 from backend.api.exceptions import ApiError
 from backend.api.schemas.request import DecisionResolveRequest
 from backend.api.services.mission_service import MissionService
@@ -35,19 +35,20 @@ def resolve_decision(
     mission_id: str,
     decision_id: str,
     body: DecisionResolveRequest,
+    _operator: None = Depends(require_operator),
     missions: MissionService = Depends(get_mission_service),
 ) -> Dict[str, Any]:
-    """Resolve a pending decision as the Commander (approve) or override it."""
+    """Resolve a pending decision as an authorized operator."""
     session = missions.get(mission_id)
     if session.hitl is None:
         raise ApiError("HITL gate is not available for this mission", code="hitl_unavailable")
     try:
         if body.action == "approve":
             return session.hitl.approve(
-                decision_id, resolved_by="commander", notes=body.notes
+                decision_id, resolved_by="operator", notes=body.notes
             )
         return session.hitl.override(
-            decision_id, resolved_by="commander", notes=body.notes
+            decision_id, resolved_by="operator", notes=body.notes
         )
     except HitlError as exc:
         raise ApiError(str(exc), code="hitl_resolution_error") from exc

@@ -1,28 +1,42 @@
+import json
+import os
 from typing import Any, Dict
+
 from backend.agents.base import BaseAgent
 from backend.core.gop import TERRAState
 from backend.interfaces.protocol import build_contract_output
 
 
-class ResourceCoordinationAgent(BaseAgent):
-    version = "1.0"
-    description = "Allocates teams and equipment based on risk and victim data"
-    capabilities = ["resource", "allocation", "logistics"]
+class EnhancedResourceCoordinationAgent(BaseAgent):
+    version = "2.0"
+    description = "Allocates teams and equipment using rule-based + LLM optimization"
+    capabilities = ["resource", "allocation", "logistics", "optimization"]
     reads = frozenset({"risk_report", "victim_map", "tasks"})
     writes = frozenset({"resource_allocation", "tasks"})
-
+    
     def __init__(self):
         super().__init__(name="resource_coordination")
-
-    async def perceive(self, gop: TERRAState) -> Dict[str, Any]:
-        risk_report = gop.risk_report
-        victim_map = gop.victim_map
-        tasks = gop.tasks
-        return {
-            "risk_report": risk_report,
-            "victim_map": victim_map,
-            "tasks": tasks,
-        }
+        self._router = None
+        self._setup_team_database()
+        
+    def _setup_team_database(self):
+        """Initialize comprehensive team/equipment database"""
+        self.teams = [
+            {"name": "Alpha", "specialty": "structural", "capacity": 8},
+            {"name": "Bravo", "specialty": "medical", "capacity": 6},
+            {"name": "Charlie", "specialty": "search", "capacity": 10},
+            {"name": "Delta", "specialty": "evacuation", "capacity": 5},
+            {"name": "Echo", "specialty": "communications", "capacity": 4},
+        ]
+        
+    def _router_enabled(self) -> bool:
+        return os.getenv("TERRA_LLM_ROUTER", "0") in ("1", "true", "yes")
+        
+    def _get_router(self):
+        if self._router is None:
+            from backend.llm.router import get_router
+            self._router = get_router()
+        return self._router
 
     async def reason(self, perception: Dict[str, Any], gop: TERRAState) -> Dict[str, Any]:
         risk = perception.get("risk_report", {})
@@ -83,7 +97,7 @@ class ResourceCoordinationAgent(BaseAgent):
         if bottlenecks:
             reasoning += f" Bottlenecks identified: {'; '.join(bottlenecks)}."
 
-        return {
+        decision = {
             "action": "allocate_resources",
             "assignments": assignments,
             "resource_utilization": round(utilization, 2),
@@ -91,6 +105,54 @@ class ResourceCoordinationAgent(BaseAgent):
             "confidence": round(min(0.7 + utilization * 0.2, 0.95), 2),
             "reasoning": reasoning,
         }
+
+        # LLM Enhancement
+        system_prompt = self._get_resource_allocation_prompt()
+        enhanced_decision = await self._enhance_with_llm(decision, gop, system_prompt)
+
+        # Use the enhanced decision
+        return {
+            "action": enhanced_decision["action"],
+            "assignments": enhanced_decision["assignments"],
+            "resource_utilization": enhanced_decision["resource_utilization"],
+            "bottlenecks": enhanced_decision["bottlenecks"],
+            "confidence": enhanced_decision["confidence"],
+            "reasoning": enhanced_decision["reasoning"],
+            "optimization_method": enhanced_decision.get("optimization_method", "rule_based"),
+            "objective_score": enhanced_decision.get("objective_score", 0.0),
+            "trade_offs": enhanced_decision.get("trade_offs", []),
+        }
+
+    def _get_resource_allocation_prompt(self) -> str:
+        return """You are a resource allocation optimization expert for disaster response.
+
+Analyze the current resource allocation decisions and optimize them for maximum victim rescue probability.
+Consider:
+- Team specialties and capabilities
+- Zone characteristics and victim priorities  
+- Risk levels and safety constraints
+- Equipment availability and constraints
+- Operational feasibility and time constraints
+
+You MUST return a JSON object with these exact fields:
+{
+  "assignments": [{"id": str, "type": "rescue|search|secure|medical|evacuate", "zone": str, "priority": "HIGH|MEDIUM|LOW", "assigned_to": str, "equipment": [str], "eta_minutes": int}],
+  "objective_score": float (0.0-1.0, higher = better allocation),
+  "trade_offs": [string list of compromises made],
+  "confidence": float (0.0-1.0)
+}
+
+Optimization principles:
+- Prioritize zones with highest victim probability and severity
+- Match team specialties to zone requirements
+- Balance load across teams to avoid burnout
+- Consider time-critical situations and response times
+- Maintain safety constraints and risk thresholds
+- Use all available teams effectively
+
+Return ONLY valid JSON.
+
+Current context: Multi-zone disaster with teams Alpha, Bravo, Charlie. Need to allocate resources across victim zones and secure perimeter."""
 
     async def act(self, decision: Dict[str, Any], gop: TERRAState) -> Dict[str, Any]:
         tasks = [
@@ -113,10 +175,15 @@ class ResourceCoordinationAgent(BaseAgent):
             tasks=tasks,
             reasoning_summary=reasoning or (
                 f"Allocated {len(report['assignments'])} assignments across victim zones "
-                f"(utilization {report['utilization']:.0%})"
+                f"(utilization {report['utilization']:.0%}) "
+                f"(method: {decision.get('optimization_method', 'rule_based')})"
             ),
             next_handoff={
                 "agent": "knowledge_retrieval",
                 "reason": "resource plan scopes the knowledge query",
             },
         )
+
+
+# For backward compatibility, keep the original agent class name
+ResourceCoordinationAgent = EnhancedResourceCoordinationAgent

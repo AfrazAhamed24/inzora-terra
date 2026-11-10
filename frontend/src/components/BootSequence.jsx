@@ -1,10 +1,8 @@
 /**
- * BootSequence - Hologram HUD system wake for D.E.X.T.E.R.
+ * BootSequence - minimal system readiness screen.
  *
- * Phases: idle (SYSTEM READY, click to initialize) → boot (D.E.X.T.E.R online)
- * → scan (sensors come online one by one) → done (orchestrator initializing).
- * HUD chrome: angular frame, radar dial, mission-progress meter, sensor tiles and a
- * scrolling data footer. Narrated by D.E.X.T.E.R via the VoiceDirector.
+ * Phases: idle → boot → sensor check → standby. This is a local UI readiness
+ * sequence, not proof of field hardware connectivity.
  */
 
 import { useEffect, useRef, useState } from 'react'
@@ -25,10 +23,10 @@ const SENSORS = [
 
 const BOOT_LINES = [
   'Core systems online',
-  'Neural mesh initialized',
-  'Satellite uplink acquired',
-  'Tactical grid locked',
-  'D.E.X.T.E.R v1.0 loaded',
+  'Mission state initialized',
+  'Simulation scenario loaded',
+  'Telemetry stream ready',
+  'Agent registry ready',
 ]
 
 // Reference-style scrolling data footer (π digits, duplicated for a seamless loop)
@@ -78,12 +76,12 @@ export default function BootSequence({ onComplete }) {
       timers.current.push(iv)
     }, 300)
 
-    voice.speak('Good evening, Commander. D.E.X.T.E.R online. Initializing disaster response command system.', { delay: 400 })
+    voice.speak('Mission interface ready. Initializing the demo response system.', { delay: 400 })
 
     // Phase 2: environment scan
     later(() => {
       setPhase('scan')
-      voice.speak('Scanning environment. Bringing sensors online.', { interrupt: true })
+      voice.speak('Checking simulated sensor feeds.', { interrupt: true })
     }, 3100)
 
     // Sensors light up one by one
@@ -94,14 +92,14 @@ export default function BootSequence({ onComplete }) {
       }, 3900 + i * 620)
     })
     later(() => {
-      voice.speak('All systems nominal. Telemetry linked. Orchestrator initializing.', { interrupt: true })
+      voice.speak('Scenario telemetry is ready. Mission engine is standing by.', { interrupt: true })
     }, 3900 + SENSORS.length * 620 + 200)
 
     // Done
     later(() => {
       setPhase('done')
       voice.uiSound('ok')
-      voice.speak('Mission control at your command, Commander.')
+      voice.speak('Mission control is ready.')
     }, 3900 + SENSORS.length * 620 + 2400)
 
     later(onComplete, 3900 + SENSORS.length * 620 + 4300)
@@ -132,8 +130,8 @@ export default function BootSequence({ onComplete }) {
       <TechButton
         onClick={(e) => { e.stopPropagation(); toggleMute() }}
         className="absolute top-6 right-6 z-10 w-10 h-10 flex items-center justify-center"
-        aria-label={muted ? 'Unmute D.E.X.T.E.R' : 'Mute D.E.X.T.E.R'}
-        title={muted ? 'Unmute D.E.X.T.E.R' : 'Mute D.E.X.T.E.R'}
+        aria-label={muted ? 'Unmute voice prompts' : 'Mute voice prompts'}
+        title={muted ? 'Unmute voice prompts' : 'Mute voice prompts'}
       >
         {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
       </TechButton>
@@ -148,10 +146,10 @@ export default function BootSequence({ onComplete }) {
               transition={{ duration: 0.8 }}
               className="text-4xl md:text-6xl font-display font-semibold tracking-[0.04em] text-white/95"
             >
-              D<span className="text-cyan-400/60">.</span>E<span className="text-cyan-400/60">.</span>X<span className="text-cyan-400/60">.</span>T<span className="text-cyan-400/60">.</span>E<span className="text-cyan-400/60">.</span>R
+              INZORA TERRA OS
             </motion.h1>
             <p className="mt-2 text-[10px] md:text-xs font-display font-medium text-white/40 tracking-[0.34em] uppercase">
-              Disaster Emergency eXtraction & Threat Elimination Response
+              Disaster response mission control
             </p>
           </div>
 
@@ -246,7 +244,7 @@ export default function BootSequence({ onComplete }) {
                 >
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-xs font-display font-semibold tracking-[0.3em] text-white/75 uppercase">
-                    D.E.X.T.E.R standing by
+                    Mission engine standing by
                   </span>
                 </motion.div>
               )}

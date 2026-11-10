@@ -1,8 +1,8 @@
 /**
- * TerraX - The single companion chat of D.E.X.T.E.R (the assistant surface).
+ * TerraX - Local mission query panel.
  *
- * D.E.X.T.E.R is the system; this dock is the chat you talk to. Answers strictly from
- * the live mission state (DexterBrain — no LLM, no keys) and reads replies aloud.
+ * Answers come from local rule-based logic over mission state (DexterBrain — no LLM, no keys).
+ * The backend assistant endpoint is intentionally unavailable until that phase lands.
  * Open state is controlled by the parent so voice commands ("Dexter, open the assistant")
  * can raise the dock.
  */
@@ -62,7 +62,7 @@ export default function TerraX({ open = false, onOpenChange }) {
           connectionStatus: state.connectionStatus,
           telemetryLive: state.telemetryLive,
         })
-        setMessages((m) => [...m, { id: nextId(), role: 'agent', agent: 'D.E.X.T.E.R', content: answer }])
+        setMessages((m) => [...m, { id: nextId(), role: 'agent', agent: 'Mission Query', content: answer }])
         setTyping(false)
         voice.speak(answer)
       }, 500)
@@ -79,7 +79,7 @@ export default function TerraX({ open = false, onOpenChange }) {
           <motion.div
             id="terra-x-panel"
             role="dialog"
-            aria-label="D.E.X.T.E.R assistant"
+            aria-label="Local mission query panel"
             initial={{ opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
@@ -93,14 +93,14 @@ export default function TerraX({ open = false, onOpenChange }) {
                   <Terminal className="w-3.5 h-3.5 text-cyan-400" />
                 </div>
                 <div>
-                  <div className="text-sm font-display font-semibold tracking-[0.08em] text-white/90">D.E.X.T.E.R</div>
-                  <div className="text-[10px] font-display font-medium tracking-[0.14em] text-white/35">Mission Assistant · Online</div>
+                  <div className="text-sm font-display font-semibold tracking-[0.08em] text-white/90">Mission Query</div>
+                  <div className="text-[10px] font-display font-medium tracking-[0.14em] text-white/35">Local query mode · rule-based</div>
                 </div>
               </div>
               <button
                 onClick={() => onOpenChange?.(false)}
                 className="p-1.5 rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70 transition-colors"
-                aria-label="Close D.E.X.T.E.R assistant"
+                aria-label="Close local mission query panel"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -126,8 +126,8 @@ export default function TerraX({ open = false, onOpenChange }) {
                 <div className="h-full flex flex-col items-center justify-center text-center gap-2">
                   <Sparkles className="w-4 h-4 text-cyan-400/50" />
                   <p className="text-xs text-white/35 leading-[1.7] max-w-[16rem]">
-                    Quick answers from the live mission state, Commander. Tap a chip or ask
-                    anything — no fluff, no latency.
+                    Quick answers from available mission state. Tap a chip or ask about risk,
+                    victims, resources, sensors, or current status.
                   </p>
                 </div>
               )}
@@ -187,7 +187,7 @@ export default function TerraX({ open = false, onOpenChange }) {
               {latest && (
                 <div className="mt-2 text-[10px] font-display font-medium tracking-[0.14em] text-white/25 flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-cyan-400/50" />
-                  D.E.X.T.E.R · grounded in live agent output
+                  Local response · not the backend assistant endpoint
                 </div>
               )}
             </div>
@@ -203,7 +203,7 @@ export default function TerraX({ open = false, onOpenChange }) {
         onClick={() => onOpenChange?.(!open)}
         aria-expanded={open}
         aria-controls="terra-x-panel"
-        aria-label={open ? 'Close D.E.X.T.E.R assistant' : 'Open D.E.X.T.E.R assistant'}
+        aria-label={open ? 'Close local query panel' : 'Open local query panel'}
         className={`flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-full border backdrop-blur-xl transition-all duration-300 ${
           open
             ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
@@ -213,7 +213,7 @@ export default function TerraX({ open = false, onOpenChange }) {
         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${open ? 'bg-cyan-500/20' : 'bg-white/5'}`}>
           <Terminal className="w-3 h-3" />
         </div>
-        <span className="text-[11px] font-display font-semibold tracking-[0.22em] uppercase">D.E.X.T.E.R</span>
+        <span className="text-[11px] font-display font-semibold tracking-[0.22em] uppercase">Query</span>
       </motion.button>
     </div>
   )

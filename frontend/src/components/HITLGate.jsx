@@ -2,7 +2,7 @@
  * HITLGate - Human-in-the-Loop approval gate.
  *
  * Surfaces pending human decisions from the backend and provides Approve/Deny
- * buttons so the Commander can authorize critical actions directly in the UI.
+ * buttons so a human operator can authorize critical actions directly in the UI.
  * Only visible when decisions are pending (mission stage = awaiting_confirmation).
  */
 
@@ -10,14 +10,14 @@ import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, ShieldX, AlertTriangle, Clock } from 'lucide-react'
 import { useMissionContext } from '@/context/MissionContext'
-
-const API_BASE = '/api/v1'
+import { resolveDecision } from '@/services/missionService'
 
 export default function HITLGate() {
   const { state } = useMissionContext()
   const decisions = state.decisions.filter((d) => d.status === 'pending')
   const [resolving, setResolving] = useState({})
   const [resolved, setResolved] = useState({})
+  const [errors, setErrors] = useState({})
 
   const missionId = state.mission?.mission_id
 
@@ -25,25 +25,24 @@ export default function HITLGate() {
     async (decisionId, action) => {
       if (!missionId || resolving[decisionId]) return
       setResolving((prev) => ({ ...prev, [decisionId]: true }))
+      setErrors((prev) => ({ ...prev, [decisionId]: null }))
 
       try {
-        const res = await fetch(
-          `${API_BASE}/missions/${missionId}/decisions/${decisionId}/resolve`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action,
-              notes: action === 'approve' ? 'Approved by Commander via D.E.X.T.E.R.' : 'Overridden by Commander via D.E.X.T.E.R.',
-            }),
-          }
+        await resolveDecision(
+          missionId,
+          decisionId,
+          action,
+          action === 'approve' ? 'Approved by operator via UI.' : 'Overridden by operator via UI.'
         )
-
-        if (res.ok) {
-          setResolved((prev) => ({ ...prev, [decisionId]: action }))
-        }
-      } catch {
-        // Decision resolution failed — will be retried
+        setResolved((prev) => ({ ...prev, [decisionId]: action }))
+      } catch (err) {
+        setErrors((prev) => ({
+          ...prev,
+          [decisionId]:
+            err?.status === 401
+              ? 'Authorization rejected — set VITE_TERRA_OPERATOR_KEY to match the backend operator key.'
+              : 'Resolution failed — retry or resolve from the API directly.',
+        }))
       } finally {
         setResolving((prev) => ({ ...prev, [decisionId]: false }))
       }
@@ -124,6 +123,12 @@ export default function HITLGate() {
                   {resolving[decision.id] ? 'Overriding…' : 'Override'}
                 </motion.button>
               </div>
+
+              {errors[decision.id] && (
+                <div className="px-5 pb-4">
+                  <p className="text-[11px] text-red-300/80">{errors[decision.id]}</p>
+                </div>
+              )}
             </div>
           </motion.div>
         )

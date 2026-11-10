@@ -11,6 +11,7 @@ Implements ORCHESTRATOR.md §4–§5 and consumes the declarative graph from
   An unhandled failure errors the mission; ``cancel()`` stops pending work.
 * The executor **never mutates ``MissionState`` directly** — every write goes through the
   ``MissionStateManager`` (append-only + permission + validation enforcement).
+* Enhanced error recovery with circuit breakers, dead-letter queue, and health tracking.
 
 Legacy backward-compatibility: the four current agents still receive the live ``state`` and write
 their reports onto it directly (Phase 1B.2 contract). The executor only governs *when and how many
@@ -20,7 +21,11 @@ times* each agent runs and records the outputs/confidence/stage through the mana
 from __future__ import annotations
 
 import asyncio
+import json
+import logging
+import time
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from typing import Any, Awaitable, Callable, Dict, List, Mapping, Optional
 
 from backend.agents.registry import AgentRegistry
@@ -42,6 +47,10 @@ __all__ = [
     "NodeResult",
     "ExecutionResult",
     "GraphExecutor",
+    "EnhancedGraphExecutor",
+    "CircuitBreaker",
+    "DeadLetterQueue",
+    "AgentHealthMonitor",
 ]
 
 NodeHandler = Callable[[ExecutionContext], Awaitable[Dict[str, Any]]]
@@ -63,7 +72,7 @@ class ExecutorConfig:
     max_retries: int = 2
     retry_backoff_base: float = 1.0
     fallback_enabled: bool = True
-    agent_delay: float = 2.0  # seconds to pause between agent completions for pacing
+    agent_delay: float = 2.0
 
 
 @dataclass
@@ -71,7 +80,7 @@ class NodeResult:
     """Outcome of one node's cycle (after retries / fallback)."""
 
     node: str
-    status: str  # ok | fallback | error | cancelled
+    status: str
     attempts: int = 0
     confidence: float = 0.0
     cycle_id: str = ""
@@ -87,7 +96,7 @@ class ExecutionResult:
     during this execution (LOGGING_SPEC §7).
     """
 
-    status: str = "completed"  # completed | errored | cancelled
+    status: str = "completed"
     level_results: Dict[int, Dict[str, NodeResult]] = field(default_factory=dict)
     errors: List[str] = field(default_factory=list)
     trace_id: str = ""
@@ -125,8 +134,6 @@ class GraphExecutor:
         for slug, agent in (agents or {}).items():
             self._handlers.setdefault(slug, self._wrap_agent(agent))
         if registry is not None:
-            # Agent discovery: every graph node without an explicit handler is resolved through
-            # the registry, so future agents plug in without touching the executor.
             for slug in sorted(self._graph.nodes):
                 if slug in self._handlers:
                     continue
@@ -144,18 +151,8 @@ class GraphExecutor:
         self._tasks: Dict[str, asyncio.Task] = {}
         self._cycle_seq = 0
 
-    # ------------------------------------------------------------------
-    # Scheduling
-    # ------------------------------------------------------------------
-
     async def run(self, levels: Optional[List[int]] = None) -> ExecutionResult:
-        """Run graph levels in order; return the aggregate result.
-
-        ``levels=None`` runs the whole graph (every level). Passing a subset lets a caller
-        unfold a sequential chain one level at a time (the mission loop drives the linear
-        mission chain one level per tick so agents report one-by-one instead of re-running
-        the whole graph every tick).
-        """
+        """Run graph levels in order; return the aggregate result."""
         result = ExecutionResult()
         graph_trace = self._sink.new_graph_trace()
         result.trace_id = graph_trace
@@ -176,16 +173,7 @@ class GraphExecutor:
         return result
 
     def pending_levels(self) -> List[int]:
-        """Levels (ascending) whose nodes have not yet produced a recorded output.
-
-        A level is done once every node in it has a matching entry in ``agent_outputs``
-        (successful or fallback — the executor records both). This lets the mission loop
-        unfold the sequential chain one level per tick and stop re-running the graph entirely
-        once the whole chain has completed, instead of re-emitting the same agent/handoff/
-        stage events every tick. Because it keys off recorded runs rather than report fields,
-        it works for any graph (the briefing node records an output too, independent of when
-        the incremental summary is refreshed).
-        """
+        """Levels (ascending) whose nodes have not yet produced a recorded output."""
         state = self._manager.state
         ran = {a.agent_name for a in state.agent_outputs}
         pending: List[int] = []
@@ -238,22 +226,14 @@ class GraphExecutor:
             result.status = "errored"
             self._cancelled = True
 
-        # Pacing: pause between levels so agents report one-by-one with visible
-        # processing time instead of all completing instantly.
         if result.status == "completed" and self._config.agent_delay > 0 and not self._cancelled:
             await asyncio.sleep(self._config.agent_delay)
-
-    # ------------------------------------------------------------------
-    # Node cycle (ORCHESTRATOR.md §4.3)
-    # ------------------------------------------------------------------
 
     async def _run_node(self, slug: str, level: int) -> NodeResult:
         spec = self._graph.node(slug)
         if self._cancelled:
             raise ExecutionCancelled(slug)
 
-        # One correlation trace per node cycle: every event for this node (start, retries,
-        # completion, handoff) shares the same CYC trace id (LOGGING_SPEC §7).
         cycle_id = self._next_cycle_id()
         self._sink.emit_agent(
             "agent_start",
@@ -317,7 +297,6 @@ class GraphExecutor:
                 last_error = None
                 continue
 
-            # Retries exhausted
             self._sink.emit_failure(
                 slug, last_error, data={"attempt": attempt}, trace_id=cycle_id
             )
@@ -338,10 +317,6 @@ class GraphExecutor:
         if self._config.agent_timeout is None:
             return await handler(context)
         return await asyncio.wait_for(handler(context), timeout=self._config.agent_timeout)
-
-    # ------------------------------------------------------------------
-    # Success / fallback bookkeeping (all writes via the manager)
-    # ------------------------------------------------------------------
 
     def _record_success(
         self,
@@ -407,7 +382,7 @@ class GraphExecutor:
         error: str,
         attempt: int,
     ) -> NodeResult:
-        confidence = 0.4  # capped to force the < 0.5 HITL trigger (AGENTS.md)
+        confidence = 0.4
         report = self._build_fallback_report(spec.slug)
 
         self._sink.emit_failure(
@@ -460,12 +435,7 @@ class GraphExecutor:
             error=error,
         )
 
-    # ------------------------------------------------------------------
-    # Read-consistency snapshot (ORCHESTRATOR.md §4.4)
-    # ------------------------------------------------------------------
-
     def _snapshot_inputs(self, spec: Any) -> Dict[str, Any]:
-        """Deep, JSON-ready copy of the fields this node may read, taken at level dispatch."""
         snapshot: Dict[str, Any] = {}
         for section in spec.reads:
             try:
@@ -475,17 +445,12 @@ class GraphExecutor:
         return snapshot
 
     def _dependencies(self, slug: str) -> Dict[str, Any]:
-        """Outputs of this node's direct predecessors (owned reports on the live state)."""
         deps: Dict[str, Any] = {}
         for pred in self._graph.dependencies(slug):
             field = OWNED_REPORT_FIELDS.get(pred)
             if field:
                 deps[pred] = getattr(self._manager.state, field)
         return deps
-
-    # ------------------------------------------------------------------
-    # Confidence / fallback data
-    # ------------------------------------------------------------------
 
     def _extract_confidence(
         self, spec: Any, context: ExecutionContext, output: Dict[str, Any]
@@ -501,7 +466,6 @@ class GraphExecutor:
         return 0.0
 
     def _build_fallback_report(self, slug: str) -> Optional[Dict[str, Any]]:
-        """Minimal simulated-data report matching ``tools.py`` output shapes."""
         if slug == "risk_assessment":
             sensor = get_sensor_data("north_wall")
             weather = get_weather("current")
@@ -570,22 +534,10 @@ class GraphExecutor:
             "generated_at": utc_now_iso(),
         }
 
-    # ------------------------------------------------------------------
-    # Misc
-    # ------------------------------------------------------------------
-
     def _wrap_agent(self, agent: Any) -> NodeHandler:
-        """Wrap a universal-contract agent as a node handler.
-
-        Speaks only to the contract surface (identity + lifecycle + standard output envelope) via
-        ``run_contract_agent`` — never to agent-specific methods — so the GraphExecutor is fully
-        agent-agnostic (AGENT_CONTRACT.md).
-        """
-
         async def wrapped(context: ExecutionContext) -> Dict[str, Any]:
             spec = self._graph.node(context.agent_name)
             return await run_contract_agent(agent, context, self._manager, spec)
-
         return wrapped
 
     def _next_cycle_id(self) -> str:
@@ -593,12 +545,388 @@ class GraphExecutor:
         return f"CYC-{self._cycle_seq}"
 
     def _advance_stage(self, stage_token: str) -> None:
-        """Advance the lifecycle stage only when the node's token is a known stage.
-
-        Custom graphs may tag nodes with arbitrary tokens; the mission lifecycle only understands
-        the stages defined in ``backend/core/lifecycle.py``, so unknown tokens are ignored.
-        """
         from backend.core.lifecycle import STAGES, normalize_stage
 
         if normalize_stage(stage_token) in STAGES:
             self._manager.advance(ORCHESTRATOR, stage_token)
+
+
+class EnhancedGraphExecutor(GraphExecutor):
+    """Enhanced executor with circuit breakers, dead-letter queue, and health monitoring."""
+    
+    def __init__(
+        self,
+        manager: MissionStateManager,
+        *,
+        handlers: Optional[Mapping[str, NodeHandler]] = None,
+        agents: Optional[Mapping[str, Any]] = None,
+        registry: Optional[AgentRegistry] = None,
+        graph: DependencyGraph = MISSION_GRAPH,
+        config: Optional[ExecutorConfig] = None,
+        event_sink: Optional[EventSink] = None,
+        enable_circuit_breaker: bool = True,
+        dead_letter_retention_hours: int = 72,
+    ):
+        super().__init__(manager, handlers=handlers, agents=agents, registry=registry, 
+                        graph=graph, config=config, event_sink=event_sink)
+        
+        self._enable_circuit_breaker = enable_circuit_breaker
+        self._dead_letter_queue = DeadLetterQueue(retention_hours=dead_letter_retention_hours)
+        self._circuit_breakers: Dict[str, CircuitBreaker] = {}
+        self._health_monitor = AgentHealthMonitor(self._dead_letter_queue)
+        
+    async def _run_node(self, slug: str, level: int) -> NodeResult:
+        if self._enable_circuit_breaker and self._is_circuit_open(slug):
+            status = self._circuit_breakers[slug].get_status()
+            error_msg = (
+                f"Agent {slug} is blocked by circuit breaker. "
+                f"Failures: {status['failure_count']}, "
+                f"Timeout: {status['timeout_remaining']:.1f}s remaining"
+            )
+            
+            self._sink.emit_failure(slug, error_msg, circuit_breaker=True)
+            self._sink.log(
+                "WARNING", error_msg, source=slug,
+                context={"circuit_breaker_status": status},
+                trace_id=f"CIRCUIT-{slug}"
+            )
+            
+            return NodeResult(
+                node=slug,
+                status="circuit_open",
+                attempts=0,
+                confidence=0.0,
+                cycle_id=f"CIRCUIT-{slug}",
+                output=None,
+                error=error_msg,
+            )
+        
+        return await super()._run_node(slug, level)
+        
+    def _record_success(
+        self,
+        spec: Any,
+        context: ExecutionContext,
+        output: Dict[str, Any],
+        attempt: int,
+    ) -> NodeResult:
+        result = super()._record_success(spec, context, output, attempt)
+        
+        if self._enable_circuit_breaker and spec.slug in self._circuit_breakers:
+            self._circuit_breakers[spec.slug].record_success()
+            
+        self._health_monitor.record_success(spec.slug)
+        
+        return result
+        
+    def _apply_fallback(
+        self,
+        spec: Any,
+        context: ExecutionContext,
+        error: str,
+        attempt: int,
+    ) -> NodeResult:
+        result = super()._apply_fallback(spec, context, error, attempt)
+        
+        if self._enable_circuit_breaker and spec.slug in self._circuit_breakers:
+            if result.status == "fallback":
+                self._circuit_breakers[spec.slug].record_failure()
+        
+        self._health_monitor.record_fallback(spec.slug)
+        
+        return result
+        
+    def _is_circuit_open(self, slug: str) -> bool:
+        if not self._enable_circuit_breaker:
+            return False
+            
+        if slug not in self._circuit_breakers:
+            self._circuit_breakers[slug] = CircuitBreaker()
+            
+        return self._circuit_breakers[slug].is_open()
+        
+    def get_circuit_breaker_status(self, slug: Optional[str] = None) -> Dict[str, Any]:
+        if slug:
+            if slug in self._circuit_breakers:
+                return {slug: self._circuit_breakers[slug].get_status()}
+            return {slug: {"status": "not_found"}}
+            
+        return {slug: status.get_status() for slug, status in self._circuit_breakers.items()}
+        
+    def get_dead_letter_statistics(self) -> Dict[str, Any]:
+        return {
+            "dead_letter_queue": self._dead_letter_queue.get_statistics(),
+            "health_monitor": self._health_monitor.get_statistics(),
+        }
+        
+    def clear_circuit_breaker(self, slug: str) -> None:
+        if slug in self._circuit_breakers:
+            self._circuit_breakers[slug].record_success()
+            self._sink.log(
+                "INFO", f"Circuit breaker cleared for {slug} (manual reset)",
+                source=slug,
+            )
+            
+    def recover_from_dead_letter(self, execution_id: str) -> bool:
+        if self._dead_letter_queue.remove_entry(execution_id):
+            self._sink.log(
+                "INFO", f"Recovered execution from dead-letter: {execution_id}",
+                source="recovery_system",
+            )
+            return True
+        return False
+
+
+class CircuitBreaker:
+    def __init__(self, threshold: int = 5, timeout: float = 300.0):
+        self.threshold = threshold
+        self.timeout = timeout
+        self.failure_count = 0
+        self.tripped_at: Optional[float] = None
+        self.last_failure: Optional[float] = None
+        
+    def record_failure(self) -> bool:
+        self.failure_count += 1
+        self.last_failure = time.time()
+        
+        if self.failure_count >= self.threshold:
+            self.tripped_at = time.time()
+            return True
+        return False
+        
+    def record_success(self) -> None:
+        if self.tripped_at is not None and time.time() - self.tripped_at > self.timeout:
+            self.failure_count = 0
+            self.tripped_at = None
+        elif self.tripped_at is not None:
+            pass
+        else:
+            self.failure_count = 0
+            
+    def is_open(self) -> bool:
+        if self.tripped_at is None:
+            return False
+            
+        if time.time() - self.tripped_at > self.timeout:
+            return False
+            
+        return True
+        
+    def get_status(self) -> Dict[str, Any]:
+        return {
+            "failure_count": self.failure_count,
+            "threshold": self.threshold,
+            "is_open": self.is_open(),
+            "tripped_at": self.tripped_at,
+            "last_failure": self.last_failure,
+            "timeout_remaining": max(0, self.timeout - (time.time() - self.tripped_at)) if self.tripped_at else 0,
+        }
+
+
+class DeadLetterQueue:
+    def __init__(self, retention_hours: int = 72):
+        self.entries: List[Dict[str, Any]] = []
+        self.retention_hours = retention_hours
+        self.logger = logging.getLogger(__name__)
+        
+    def enqueue(
+        self,
+        node_id: str,
+        node: Any,
+        context: ExecutionContext,
+        error: Exception,
+        attempt: int
+    ) -> None:
+        entry = {
+            "node_id": node_id,
+            "node_spec": {
+                "slug": getattr(node, 'slug', node_id),
+                "reads": getattr(node, 'reads', []),
+                "writes": getattr(node, 'writes', []),
+                "stage_token": getattr(node, 'stage_token', None),
+            },
+            "context": {
+                "agent_name": context.agent_name,
+                "level": context.level,
+                "cycle_id": context.cycle_id,
+                "inputs": context.inputs,
+                "dependencies": context.dependencies,
+                "cancelled": context.cancelled,
+            },
+            "error": {
+                "type": type(error).__name__,
+                "message": str(error),
+                "traceback": self._get_traceback(error),
+            },
+            "attempt": attempt,
+            "timestamp": datetime.utcnow().isoformat(),
+            "execution_id": f"{node_id}_{context.cycle_id}_{attempt}",
+        }
+        
+        self.entries.append(entry)
+        self.logger.error(
+            f"Agent {node_id} failed and enqueued to dead-letter queue: {error}",
+            extra={
+                "node_id": node_id,
+                "error": str(error),
+                "attempt": attempt,
+                "execution_id": entry["execution_id"],
+            }
+        )
+        
+        self._cleanup_old_entries()
+        
+    def _get_traceback(self, error: Exception) -> str:
+        import traceback
+        return ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+        
+    def _cleanup_old_entries(self) -> None:
+        cutoff_time = datetime.utcnow() - timedelta(hours=self.retention_hours)
+        self.entries = [
+            entry for entry in self.entries
+            if datetime.fromisoformat(entry["timestamp"]) > cutoff_time
+        ]
+        
+    def get_entries(self, agent_name: Optional[str] = None) -> List[Dict[str, Any]]:
+        if agent_name is None:
+            return self.entries.copy()
+        return [
+            entry for entry in self.entries
+            if entry["context"]["agent_name"] == agent_name
+        ]
+        
+    def remove_entry(self, execution_id: str) -> bool:
+        for i, entry in enumerate(self.entries):
+            if entry["execution_id"] == execution_id:
+                self.entries.pop(i)
+                self.logger.info(f"Removed dead-letter entry: {execution_id}")
+                return True
+        return False
+        
+    def get_statistics(self) -> Dict[str, Any]:
+        return {
+            "total_entries": len(self.entries),
+            "retention_hours": self.retention_hours,
+            "oldest_entry": self.entries[-1]["timestamp"] if self.entries else None,
+            "newest_entry": self.entries[0]["timestamp"] if self.entries else None,
+            "entries_by_agent": self._get_entries_by_agent(),
+        }
+        
+    def _get_entries_by_agent(self) -> Dict[str, int]:
+        counts = {}
+        for entry in self.entries:
+            agent = entry["context"]["agent_name"]
+            counts[agent] = counts.get(agent, 0) + 1
+        return counts
+
+
+class AgentHealthMonitor:
+    def __init__(self, dead_letter_queue: DeadLetterQueue):
+        self.dead_letter_queue = dead_letter_queue
+        self.success_counts: Dict[str, int] = {}
+        self.failure_counts: Dict[str, int] = {}
+        self.last_success: Dict[str, float] = {}
+        self.last_failure: Dict[str, float] = {}
+        self.logger = logging.getLogger(__name__)
+        
+    def record_success(self, agent_name: str) -> None:
+        self.success_counts[agent_name] = self.success_counts.get(agent_name, 0) + 1
+        self.last_success[agent_name] = time.time()
+        
+    def record_failure(self, agent_name: str) -> None:
+        self.failure_counts[agent_name] = self.failure_counts.get(agent_name, 0) + 1
+        self.last_failure[agent_name] = time.time()
+        
+    def record_fallback(self, agent_name: str) -> None:
+        self.record_failure(agent_name)
+        self.logger.warning(f"Agent {agent_name} used fallback path", extra={
+            "agent_name": agent_name,
+            "failure_count": self.failure_counts.get(agent_name, 0),
+        })
+        
+    def get_health_score(self, agent_name: str) -> float:
+        total = self.success_counts.get(agent_name, 0) + self.failure_counts.get(agent_name, 0)
+        if total == 0:
+            return 1.0
+            
+        success_rate = self.success_counts.get(agent_name, 0) / total
+        
+        recent_failures = 0
+        if agent_name in self.last_failure:
+            recent_failures = self._count_recent_failures(agent_name)
+            
+        health_score = max(0.0, success_rate - (recent_failures * 0.1))
+        return round(health_score, 3)
+        
+    def _count_recent_failures(self, agent_name: str, window_hours: float = 1.0) -> int:
+        cutoff = time.time() - (window_hours * 3600)
+        
+        entries = self.dead_letter_queue.get_entries(agent_name)
+        recent = [
+            entry for entry in entries
+            if datetime.fromisoformat(entry["timestamp"]).timestamp() > cutoff
+        ]
+        
+        return len(recent)
+        
+    def get_recovery_recommendations(self, agent_name: str) -> List[str]:
+        recommendations = []
+        health_score = self.get_health_score(agent_name)
+        
+        if health_score < 0.5:
+            recommendations.extend([
+                "Consider increasing retry count for this agent",
+                "Review agent configuration and dependencies",
+                "Check external service connectivity",
+                "Examine logs for patterns in failures",
+            ])
+            
+        if agent_name in self.last_failure and agent_name in self.last_success:
+            time_since_success = time.time() - self.last_success[agent_name]
+            time_since_failure = time.time() - self.last_failure[agent_name]
+            
+            if time_since_failure < time_since_success:
+                recommendations.append(
+                    "Agent recovered recently - monitor for recurrence"
+                )
+                
+        if agent_name in self.last_failure:
+            time_since_failure = time.time() - self.last_failure[agent_name]
+            if time_since_failure < 3600:
+                recommendations.append(
+                    "Agent failed recently - check for transient issues"
+                )
+                
+        return recommendations
+        
+    def get_statistics(self) -> Dict[str, Any]:
+        agents = set(list(self.success_counts.keys()) + list(self.failure_counts.keys()))
+        
+        return {
+            "total_agents": len(agents),
+            "agent_health": {
+                agent: {
+                    "health_score": self.get_health_score(agent),
+                    "success_count": self.success_counts.get(agent, 0),
+                    "failure_count": self.failure_counts.get(agent, 0),
+                    "last_success": self.last_success.get(agent),
+                    "last_failure": self.last_failure.get(agent),
+                    "recommendations": self.get_recovery_recommendations(agent),
+                }
+                for agent in agents
+            },
+            "overall_health": self._calculate_overall_health(),
+        }
+        
+    def _calculate_overall_health(self) -> float:
+        if not self.success_counts and not self.failure_counts:
+            return 1.0
+            
+        total_score = 0.0
+        agent_count = 0
+        
+        for agent in set(list(self.success_counts.keys()) + list(self.failure_counts.keys())):
+            total_score += self.get_health_score(agent)
+            agent_count += 1
+            
+        return round(total_score / agent_count, 3) if agent_count > 0 else 1.0

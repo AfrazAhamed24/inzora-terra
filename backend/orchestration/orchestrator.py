@@ -11,7 +11,15 @@ from backend.agents.knowledge.agent import KnowledgeRetrievalAgent
 from backend.agents.rescue_coordination.agent import RescueCoordinationAgent
 from backend.agents.registry import AgentRegistry
 from backend.orchestration.briefing import BriefingGenerator, collect_handoffs
-from backend.orchestration.executor import ExecutionResult, GraphExecutor
+from backend.orchestration.executor import (
+    ExecutionResult, 
+    GraphExecutor, 
+    EnhancedGraphExecutor,
+    CircuitBreaker,
+    DeadLetterQueue,
+    AgentHealthMonitor,
+)
+from backend.orchestration.graph import DependencyGraph
 
 
 class Orchestrator(AgentProtocol):
@@ -76,19 +84,28 @@ class Orchestrator(AgentProtocol):
     async def run_graph(self) -> ExecutionResult:
         """Execute L1 → L2 → briefing over the dependency graph. Returns the aggregate result."""
         manager = self._ensure_manager()
-        executor = GraphExecutor(
+        
+        # Use EnhancedGraphExecutor with error recovery and circuit breakers
+        executor = EnhancedGraphExecutor(
             manager,
             registry=self.registry,
             handlers={"briefing_generator": BriefingGenerator()},
+            enable_circuit_breaker=True,
+            dead_letter_retention_hours=72,
         )
         self._executor = executor
         result = await executor.run()
         for slug, node_result in sorted(result.results().items()):
             self._log(slug, f"{slug}: {node_result.status}")
+        
+        # Log any dead-letter entries for monitoring
+        if hasattr(executor, '_dead_letter_queue'):
+            dead_letter_stats = executor.get_dead_letter_statistics()
+            if dead_letter_stats['dead_letter_queue']['total_entries'] > 0:
+                self._log("orchestrator", 
+                         f"Dead-letter queue contains {dead_letter_stats['dead_letter_queue']['total_entries']} entries")
+                
         return result
-
-    def get_state(self) -> TERRAState:
-        return self.state
 
     def abort(self, reason: str = ""):
         """Cancel running cycles and move the mission to ``aborted``."""
@@ -98,6 +115,61 @@ class Orchestrator(AgentProtocol):
         if manager.state.status.stage not in ("completed", "aborted", "errored"):
             manager.advance(ORCHESTRATOR, "aborted")
         self._log("Orchestrator", f"Mission aborted: {reason}")
+
+    # ------------------------------------------------------------------
+    # Enhanced error recovery and health monitoring
+    # ------------------------------------------------------------------
+
+    def get_circuit_breaker_status(self, agent_name: Optional[str] = None) -> Dict[str, Any]:
+        """Get circuit breaker status for monitoring and manual recovery."""
+        if self._executor is None:
+            return {}
+        
+        # EnhancedGraphExecutor has additional recovery methods
+        if hasattr(self._executor, 'get_circuit_breaker_status'):
+            return self._executor.get_circuit_breaker_status(agent_name)
+        
+        # Fallback for standard GraphExecutor
+        return {"status": "enhanced_executor_required"}
+
+    def get_dead_letter_statistics(self) -> Dict[str, Any]:
+        """Get dead-letter queue statistics for audit and recovery planning."""
+        if self._executor is None:
+            return {"status": "no_executor_running"}
+            
+        if hasattr(self._executor, 'get_dead_letter_statistics'):
+            return self._executor.get_dead_letter_statistics()
+            
+        return {"status": "enhanced_executor_required"}
+
+    def clear_circuit_breaker(self, agent_name: str) -> None:
+        """Manually clear circuit breaker for emergency recovery."""
+        if self._executor is None:
+            return
+            
+        if hasattr(self._executor, 'clear_circuit_breaker'):
+            self._executor.clear_circuit_breaker(agent_name)
+            self._log("orchestrator", f"Circuit breaker cleared for {agent_name}")
+            
+    def recover_from_dead_letter(self, execution_id: str) -> bool:
+        """Attempt recovery of specific execution from dead-letter queue."""
+        if self._executor is None:
+            return False
+            
+        if hasattr(self._executor, 'recover_from_dead_letter'):
+            return self._executor.recover_from_dead_letter(execution_id)
+            
+        return False
+
+    def get_agent_health_score(self, agent_name: str) -> float:
+        """Get health score for specific agent."""
+        if self._executor is None:
+            return 0.0
+            
+        if hasattr(self._executor, '_health_monitor'):
+            return self._executor._health_monitor.get_health_score(agent_name)
+            
+        return 0.0
 
     # ------------------------------------------------------------------
     # Legacy entry point (backend/run.py) — now graph-scheduled

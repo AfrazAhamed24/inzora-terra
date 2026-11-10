@@ -224,6 +224,8 @@ class EnvironmentSnapshot(_StrictModel):
 
     sensors: Dict[str, Any] = Field(default_factory=dict)
     weather: Dict[str, Any] = Field(default_factory=dict)
+    seismic: Dict[str, Any] = Field(default_factory=dict)
+    change_detection: Dict[str, Any] = Field(default_factory=dict)
     building: Dict[str, Any] = Field(default_factory=dict)
 
 

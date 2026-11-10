@@ -1,9 +1,8 @@
 /**
  * App - Main application entry point.
  *
- * Cinematic flow: BootSequence (wake + environment scan) → mission auto-starts →
- * useDexterNarration narrates agents one by one from live events.
- * D.E.X.T.E.R. is available via the floating button with full conversational flow.
+ * Mission flow: readiness screen → explicit start authorization → simulated telemetry
+ * and rule-based agent events stream from the backend.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -24,7 +23,7 @@ import Nav from '@/components/Nav'
 import HeroSection from '@/components/HeroSection'
 import DashboardSection from '@/components/DashboardSection'
 import AgentSection from '@/components/AgentSection'
-import RAGSection from '@/components/RAGSection'
+import KnowledgeSection from '@/components/KnowledgeSection'
 import TimelineSection from '@/components/TimelineSection'
 import DexterStatus from '@/components/DexterStatus'
 import TerraX from '@/components/TerraX'
@@ -223,18 +222,18 @@ function AppInner() {
   // Conversation phase display labels
   const PHASE_LABELS = {
     IDLE: '',
-    ACTIVATED: 'D.E.X.T.E.R · ACTIVATED',
-    BRIEFING: 'D.E.X.T.E.R · BRIEFING',
-    AWAITING_SCAN_APPROVAL: 'D.E.X.T.E.R · AWAITING COMMAND',
+    ACTIVATED: 'VOICE CONTROL · ACTIVE',
+    BRIEFING: 'VOICE CONTROL · BRIEFING',
+    AWAITING_SCAN_APPROVAL: 'VOICE CONTROL · AWAITING APPROVAL',
     SCANNING: 'SCANNING ENVIRONMENT',
     ANALYZING: 'ANALYZING TERRAIN',
     DETECTING: 'DETECTING SURVIVORS',
     ROUTE_CALCULATION: 'CALCULATING ROUTES',
-    AWAITING_DEPLOYMENT_APPROVAL: 'D.E.X.T.E.R · AWAITING DEPLOYMENT',
+    AWAITING_DEPLOYMENT_APPROVAL: 'VOICE CONTROL · AWAITING DEPLOYMENT',
     DEPLOYING: 'DEPLOYING RESCUE ENGINE',
     MISSION_ACTIVE: 'MISSION ACTIVE',
     COMPLETED: 'MISSION COMPLETE',
-    STANDING_BY: 'D.E.X.T.E.R · STANDING BY',
+    STANDING_BY: 'VOICE CONTROL · STANDBY',
   }
 
   return (
@@ -259,11 +258,11 @@ function AppInner() {
         <HeroSection />
         <DashboardSection />
         <AgentSection />
-        <RAGSection />
+        <KnowledgeSection />
         <TimelineSection />
       </main>
 
-      {/* Terra X — the single D.E.X.T.E.R companion chatbot */}
+      {/* Terra X — local mission query panel; backend assistant endpoint is not active yet. */}
       <TerraX open={terraOpen} onOpenChange={setTerraOpen} />
 
       {/* HITL Approval Gate — shown when human authorization is required */}
@@ -293,8 +292,8 @@ function AppInner() {
                 </h3>
               </div>
               <p className="text-[13px] text-white/70 leading-relaxed mb-2">
-                D.E.X.T.E.R. is ready to deploy the rescue simulation. Authorizing will begin live
-                telemetry streaming, multi-agent analysis and the mission timeline.
+                This will start the demo scenario, simulated telemetry stream, rule-based agent
+                analysis and mission timeline. No field action is dispatched from this interface.
               </p>
               <p className="text-[11px] font-mono text-white/40 mb-5">
                 Incident: Two-floor building collapse · 3 persons reported missing
@@ -319,10 +318,10 @@ function AppInner() {
         )}
       </AnimatePresence>
 
-      {/* JARVIS-style caption strip */}
+      {/* Voice caption strip */}
       <DexterStatus voiceState={voiceState} />
 
-      {/* Conversation dialogue display — shows what D.E.X.T.E.R. is saying */}
+      {/* Conversation dialogue display */}
       <AnimatePresence>
         {dialogue && (voiceState === VoiceState.THINKING || voiceState === VoiceState.SPEAKING ||
           voiceState === VoiceState.ACKNOWLEDGING || voiceState === VoiceState.EXPLAINING_NAME) && (
@@ -338,7 +337,7 @@ function AppInner() {
             </div>
             <div className="min-w-0">
               <div className="text-[10px] font-display font-semibold tracking-[0.24em] text-blue-400/80 uppercase mb-1">
-                D.E.X.T.E.R · {PHASE_LABELS[conversationPhase] || 'PROCESSING'}
+                Voice Control · {PHASE_LABELS[conversationPhase] || 'PROCESSING'}
               </div>
               <p className="text-[13px] text-white/85 leading-relaxed">{dialogue}</p>
             </div>
@@ -356,7 +355,7 @@ function AppInner() {
             className="fixed bottom-32 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#09090b]/85 backdrop-blur-xl border border-blue-500/30"
           >
             <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-white/60">Say D.E.X.T.E.R…</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase text-white/60">Listening for command…</span>
           </motion.div>
         )}
         {(voiceState === VoiceState.WAKE_WORD_DETECTED || voiceState === VoiceState.ACKNOWLEDGING) && (
@@ -367,7 +366,7 @@ function AppInner() {
             className="fixed bottom-32 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#09090b]/85 backdrop-blur-xl border border-cyan-500/30"
           >
             <div className="w-2 h-2 rounded-full bg-cyan-400" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-cyan-400/80">D.E.X.T.E.R · ACKNOWLEDGING</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase text-cyan-400/80">VOICE · ACKNOWLEDGING</span>
           </motion.div>
         )}
         {voiceState === VoiceState.EXPLAINING_NAME && (
@@ -378,7 +377,7 @@ function AppInner() {
             className="fixed bottom-32 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#09090b]/85 backdrop-blur-xl border border-cyan-500/30"
           >
             <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-cyan-400/80">D.E.X.T.E.R · IDENTIFYING</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase text-cyan-400/80">VOICE · IDENTIFYING</span>
           </motion.div>
         )}
         {voiceState === VoiceState.CONVERSING && (
@@ -390,7 +389,7 @@ function AppInner() {
           >
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[10px] tracking-[0.2em] uppercase text-emerald-400/80">
-              {PHASE_LABELS[conversationPhase] || 'D.E.X.T.E.R · LISTENING'}
+              {PHASE_LABELS[conversationPhase] || 'VOICE · LISTENING'}
             </span>
           </motion.div>
         )}
@@ -402,7 +401,7 @@ function AppInner() {
             className="fixed bottom-32 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#09090b]/85 backdrop-blur-xl border border-amber-500/30"
           >
             <Loader className="w-3 h-3 text-amber-400 animate-spin" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-amber-400/80">D.E.X.T.E.R · PROCESSING</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase text-amber-400/80">VOICE · PROCESSING</span>
           </motion.div>
         )}
         {voiceState === VoiceState.SPEAKING && (
@@ -413,7 +412,7 @@ function AppInner() {
             className="fixed bottom-32 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#09090b]/85 backdrop-blur-xl border border-emerald-500/30"
           >
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] tracking-[0.2em] uppercase text-emerald-400/80">D.E.X.T.E.R · SPEAKING</span>
+            <span className="text-[10px] tracking-[0.2em] uppercase text-emerald-400/80">VOICE · SPEAKING</span>
           </motion.div>
         )}
         {voiceUnsupported && (
@@ -447,7 +446,7 @@ function AppInner() {
           onClick={toggleVoice}
           aria-label={
             voiceState === VoiceState.IDLE || voiceState === VoiceState.STANDBY
-              ? 'Activate D.E.X.T.E.R voice command'
+              ? 'Activate voice command'
               : 'Cancel voice command'
           }
           aria-pressed={voiceListening}
@@ -481,16 +480,16 @@ function AppInner() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.6 }}
           onClick={toggleMute}
-          aria-label={muted ? 'Unmute D.E.X.T.E.R' : 'Mute D.E.X.T.E.R'}
+          aria-label={muted ? 'Unmute voice prompts' : 'Mute voice prompts'}
           aria-pressed={muted}
-          title={muted ? 'Unmute D.E.X.T.E.R' : 'Mute D.E.X.T.E.R'}
+          title={muted ? 'Unmute voice prompts' : 'Mute voice prompts'}
           className="w-10 h-10 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl flex items-center justify-center hover:bg-white/10 transition-all duration-300 text-white/50 hover:text-white/80"
         >
           {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </motion.button>
       </div>
 
-      {/* Cinematic boot sequence */}
+      {/* Readiness screen */}
       <AnimatePresence>
         {!booted && <BootSequence onComplete={onBootComplete} />}
       </AnimatePresence>

@@ -1,9 +1,8 @@
 /**
- * BriefingOverlay - Cinematic mission briefing (the "final report").
+ * BriefingOverlay - mission briefing final report.
  *
- * Appears when the Orchestrator produces a briefing. Staggered reveal, D.E.X.T.E.R
- * narrates the summary aloud, and pending human decisions are surfaced with an
- * APPROVE action so the Commander can resolve the HITL gate in place.
+ * Appears when the Orchestrator produces a briefing. Pending human decisions are
+ * surfaced with an APPROVE action so the operator can resolve the HITL gate in place.
  *
  * Typography: Rajdhani (font-display) for labels/headings, Inter for reading copy,
  * JetBrains Mono for identifiers — a clear hierarchy so dense agent output stays legible.
@@ -124,7 +123,7 @@ export default function BriefingOverlay({
           parts.push(`Entry clearance: ${rescue.entry_clearance.toLowerCase()}.`)
         }
       }
-      parts.push('D.E.X.T.E.R standing by for your orders, Commander.')
+      parts.push('Mission control is standing by for operator review.')
       voice.speak(parts.join(' '))
     }, 4800)
     return () => clearTimeout(t)
@@ -137,7 +136,7 @@ export default function BriefingOverlay({
       await onResolve?.(decision, 'approve')
       setApproved(true)
       voice.uiSound('ok')
-      voice.speak('Approved, Commander. Deployment authorized. Executing.')
+      voice.speak('Approved. Deployment authorized. Executing.')
     } catch {
       voice.uiSound('alert')
       voice.speak('Approval failed. The decision could not be resolved.')
@@ -223,7 +222,7 @@ export default function BriefingOverlay({
             <div>
               <div className="text-xs font-display font-semibold tracking-[0.2em] text-emerald-300 uppercase">Mission complete</div>
               <div className="text-[11px] text-emerald-200/60 mt-0.5">
-                All decisions resolved. Mission log archived, Commander.
+                All decisions resolved. Mission log archived.
               </div>
             </div>
           </motion.div>
@@ -241,7 +240,7 @@ export default function BriefingOverlay({
                   {pending.length} decision{pending.length > 1 ? 's' : ''} awaiting your approval
                 </div>
                 <div className="text-[11px] text-amber-200/60 mt-0.5">
-                  No critical action is dispatched without your confirmation, Commander.
+                  No critical action is dispatched without operator confirmation.
                 </div>
               </div>
             </div>
@@ -275,7 +274,7 @@ export default function BriefingOverlay({
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <div>
-              <div className="text-xs font-display font-semibold tracking-[0.2em] text-emerald-300 uppercase">Approved by Commander</div>
+              <div className="text-xs font-display font-semibold tracking-[0.2em] text-emerald-300 uppercase">Approved by Operator</div>
               <div className="text-[11px] text-emerald-200/60 mt-0.5">
                 Deployment authorized. Mission completing.
               </div>

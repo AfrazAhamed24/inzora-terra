@@ -10,7 +10,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, status
 
-from backend.api.dependencies import get_mission_service
+from backend.api.dependencies import get_mission_service, require_operator
 from backend.api.schemas.request import MissionCreateRequest, MissionStartRequest
 from backend.api.schemas.response import (
     MissionListResponse,
@@ -25,6 +25,7 @@ router = APIRouter(prefix="/missions", tags=["missions"])
 @router.post("", response_model=MissionResponse, status_code=status.HTTP_201_CREATED)
 async def create_mission(
     body: MissionCreateRequest,
+    _operator: None = Depends(require_operator),
     missions: MissionService = Depends(get_mission_service),
 ) -> MissionResponse:
     session = await missions.create(
@@ -58,6 +59,7 @@ async def get_mission(
 async def start_mission(
     mission_id: str,
     body: Optional[MissionStartRequest] = Body(default=None),
+    _operator: None = Depends(require_operator),
     missions: MissionService = Depends(get_mission_service),
 ) -> MissionResponse:
     session = await missions.start(mission_id)
@@ -67,6 +69,7 @@ async def start_mission(
 @router.post("/{mission_id}/stop", response_model=MissionResponse)
 async def stop_mission(
     mission_id: str,
+    _operator: None = Depends(require_operator),
     missions: MissionService = Depends(get_mission_service),
 ) -> MissionResponse:
     session = missions.stop(mission_id)

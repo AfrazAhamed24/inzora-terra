@@ -2,13 +2,22 @@
  * API Client - Clean HTTP layer for backend communication.
  *
  * Architectural decision: Centralizes all HTTP calls through a single client
- * with typed methods, error handling, and base URL configuration.
- * No widget should directly call fetch() - always use this client.
+ * with typed methods, error handling, base URL configuration, and operator
+ * authorization. No widget should directly call fetch() - always use this client.
+ *
+ * Authorization: state-changing routes require `X-Terra-Operator-Key` when the
+ * backend has `TERRA_API_OPERATOR_KEY` configured. The key is read from
+ * `VITE_TERRA_OPERATOR_KEY`. This is a shared-secret gate for the demo tier, not
+ * real identity/authn — production auth (per-user identity, ACLs, audit) is
+ * explicitly post-demo (BLUEPRINT "Future Production").
  */
 
 import type { ErrorResponse } from '@/types/api'
 
 const API_BASE = '/api/v1'
+
+const OPERATOR_KEY = String(import.meta.env.VITE_TERRA_OPERATOR_KEY ?? '').trim()
+const OPERATOR_HEADER = 'X-Terra-Operator-Key'
 
 /** Custom error for API failures */
 export class ApiError extends Error {
@@ -48,6 +57,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     method,
     headers: {
       'Content-Type': 'application/json',
+      ...(OPERATOR_KEY ? { [OPERATOR_HEADER]: OPERATOR_KEY } : {}),
       ...headers,
     },
     signal,
