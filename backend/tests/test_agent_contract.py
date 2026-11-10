@@ -92,7 +92,7 @@ async def run_executor(mgr, *, config=None, handlers=None, agents=None):
         mgr,
         handlers=handlers or BRIEFING,
         agents=agents if agents is not None else default_agents(),
-        config=config or ExecutorConfig(agent_timeout=10.0, retry_backoff_base=0.0),
+        config=config or ExecutorConfig(agent_timeout=10.0, retry_backoff_base=0.0, agent_delay=0.0),
     )
     return await executor.run()
 
@@ -311,7 +311,7 @@ def _executor_with(risk_agent, *, config=None):
             **BRIEFING,
         },
         agents={"risk_assessment": risk_agent},
-        config=config or ExecutorConfig(agent_timeout=10.0, retry_backoff_base=0.0),
+        config=config or ExecutorConfig(agent_timeout=10.0, retry_backoff_base=0.0, agent_delay=0.0),
     )
     return mgr, executor
 
@@ -459,7 +459,8 @@ def test_full_graph_preserves_legacy_outputs():
     asyncio.run(run_executor(mgr))
     state = mgr.state
 
-    assert state.risk_report["likelihood"] == "HIGH"
+    # 4-degree increasing tilt + heavy rain crosses the compound-risk threshold.
+    assert state.risk_report["likelihood"] == "CRITICAL"
     assert state.victim_map["primary_search_zone"] == "B2"
     assert state.resource_allocation["assignments"]
     assert state.knowledge_results["recommendations"]
