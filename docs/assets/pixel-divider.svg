@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="24" viewBox="0 0 1000 24" role="img" aria-label="Pixel divider">
+  <rect width="1000" height="24" fill="#09090b"/>
+  <g>
+    <rect x="40" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="76" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="0.15s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="112" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="0.3s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="148" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="0.45s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="184" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="0.6s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="220" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="0.75s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="256" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="0.9s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="292" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="1.05s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="328" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="1.2s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="364" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="1.35s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="400" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="1.5s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="436" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="1.65s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="472" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="1.8s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="508" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="1.95s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="544" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="2.1s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="580" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="2.25s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="616" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="2.4s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="652" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="2.55s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="688" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="2.7s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="724" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="2.85s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="760" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="3s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="796" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="3.15s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="832" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="3.3s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="868" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="3.45s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="904" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="3.6s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="940" y="8" width="12" height="12" fill="#27272a">
+      <animate attributeName="fill" values="#27272a;#3b82f6;#27272a" begin="3.75s" dur="3s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+</svg>

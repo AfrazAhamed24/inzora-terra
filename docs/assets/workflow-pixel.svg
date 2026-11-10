@@ -1,0 +1,333 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" role="img" aria-labelledby="wt wd">
+  <title id="wt">Inzora Terra OS mission pipeline</title>
+  <desc id="wd">Animated pixel diagram: rover telemetry enters the shared TERRAState, four specialist agents run in two concurrent batches, the orchestrator synthesises a mission briefing.</desc>
+
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#ffffff" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
+    <pattern id="scanlines" width="4" height="4" patternUnits="userSpaceOnUse">
+      <path d="M0 0H4" stroke="#ffffff" stroke-opacity="0.02" stroke-width="1"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L8 4L0 8Z" fill="#3f3f46"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="620" fill="#09090b"/>
+  <rect width="1000" height="620" fill="url(#grid)"/>
+  <rect width="1000" height="620" fill="url(#scanlines)"/>
+
+  <!-- header -->
+  <text x="36" y="36" fill="#fafafa" font-family="'Courier New', Courier, monospace" font-size="18" font-weight="700" letter-spacing="5">INZORA TERRA OS</text>
+  <text x="36" y="53" fill="#52525b" font-family="'Courier New', Courier, monospace" font-size="8" letter-spacing="1.5">AI-NATIVE DISASTER RESPONSE // MISSION PIPELINE</text>
+  <rect x="826" y="26" width="7" height="7" fill="#22c55e">
+    <animate attributeName="opacity" values="1;0.15;1" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  <text x="840" y="33" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="9" letter-spacing="1">LIVE SIM</text>
+  <text x="964" y="33" text-anchor="end" fill="#3f3f46" font-family="'Courier New', Courier, monospace" font-size="9" letter-spacing="1">REST + SSE // /api/v1</text>
+  <line x1="36" y1="64" x2="964" y2="64" stroke="#27272a" stroke-width="1"/>
+
+  <!-- 01 rover -->
+  <rect x="36" y="80" width="190" height="104" fill="#0c0c0e" stroke="#27272a"/>
+  <text x="48" y="98" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="8" letter-spacing="1.5">01 // TELEMETRY</text>
+
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -2;0 0" dur="2s" repeatCount="indefinite"/>
+    <path d="M96 138 L164 118 L164 158 Z" fill="#3b82f6" opacity="0.08">
+      <animate attributeName="opacity" values="0.06;0.24;0.06" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <rect x="72" y="126" width="60" height="30" fill="#18181b" stroke="#52525b" stroke-width="2"/>
+    <rect x="78" y="132" width="16" height="10" fill="#3b82f6" opacity="0.8"/>
+    <rect x="98" y="132" width="28" height="4" fill="#3f3f46"/>
+    <rect x="98" y="140" width="20" height="4" fill="#3f3f46"/>
+    <rect x="98" y="148" width="24" height="4" fill="#f59e0b" opacity="0.7"/>
+    <rect x="74" y="156" width="12" height="12" fill="#0c0c0e" stroke="#52525b" stroke-width="2"/>
+    <rect x="118" y="156" width="12" height="12" fill="#0c0c0e" stroke="#52525b" stroke-width="2"/>
+    <line x1="120" y1="126" x2="120" y2="108" stroke="#52525b" stroke-width="2"/>
+    <rect x="116" y="102" width="8" height="8" fill="#3b82f6">
+      <animate attributeName="opacity" values="0.25;1;0.25" dur="1.4s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <text x="48" y="177" fill="#3f3f46" font-family="'Courier New', Courier, monospace" font-size="7" letter-spacing="0.5">ROVER-01 // THERMAL + GPR + WITNESS</text>
+
+  <!-- rover to state link -->
+  <line x1="226" y1="132" x2="250" y2="132" stroke="#27272a" stroke-width="1" marker-end="url(#arrow)"/>
+  <rect x="-3" y="-3" width="6" height="6" fill="#3b82f6">
+    <animateMotion path="M226 132 H250" dur="1.4s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- 02 shared state -->
+  <rect x="250" y="80" width="714" height="104" fill="#0c0c0e" stroke="#27272a"/>
+  <text x="262" y="98" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="8" letter-spacing="1.5">02 // TERRASTATE</text>
+  <text x="952" y="98" text-anchor="end" fill="#3f3f46" font-family="'Courier New', Courier, monospace" font-size="7" letter-spacing="1">GLOBAL OPERATING PICTURE</text>
+
+  <g font-family="'Courier New', Courier, monospace" font-size="8.5">
+    <g>
+      <rect x="262" y="110" width="126" height="30" fill="#ef4444" fill-opacity="0.10" stroke="#ef4444" stroke-opacity="0.45"/>
+      <rect x="272" y="121" width="7" height="7" fill="#ef4444"/>
+      <text x="286" y="130" fill="#d4d4d8">risk_report</text>
+      <animate attributeName="opacity" values="0.35;0.35;1;1;0.35" keyTimes="0;0.04;0.10;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+    <g>
+      <rect x="398" y="110" width="126" height="30" fill="#f59e0b" fill-opacity="0.10" stroke="#f59e0b" stroke-opacity="0.45"/>
+      <rect x="408" y="121" width="7" height="7" fill="#f59e0b"/>
+      <text x="422" y="130" fill="#d4d4d8">victim_map</text>
+      <animate attributeName="opacity" values="0.35;0.35;1;1;0.35" keyTimes="0;0.10;0.16;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+    <g>
+      <rect x="534" y="110" width="126" height="30" fill="#3b82f6" fill-opacity="0.10" stroke="#3b82f6" stroke-opacity="0.45"/>
+      <rect x="544" y="121" width="7" height="7" fill="#3b82f6"/>
+      <text x="558" y="130" fill="#d4d4d8">resource_allocation</text>
+      <animate attributeName="opacity" values="0.35;0.35;1;1;0.35" keyTimes="0;0.42;0.48;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+    <g>
+      <rect x="670" y="110" width="126" height="30" fill="#8b5cf6" fill-opacity="0.10" stroke="#8b5cf6" stroke-opacity="0.45"/>
+      <rect x="680" y="121" width="7" height="7" fill="#8b5cf6"/>
+      <text x="694" y="130" fill="#d4d4d8">knowledge_results</text>
+      <animate attributeName="opacity" values="0.35;0.35;1;1;0.35" keyTimes="0;0.46;0.52;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+    <g>
+      <rect x="806" y="110" width="146" height="30" fill="#22c55e" fill-opacity="0.10" stroke="#22c55e" stroke-opacity="0.45"/>
+      <rect x="816" y="121" width="7" height="7" fill="#22c55e"/>
+      <text x="830" y="130" fill="#d4d4d8">mission_briefing</text>
+      <animate attributeName="opacity" values="0.35;0.35;1;1;0.35" keyTimes="0;0.74;0.80;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+  </g>
+
+  <text x="262" y="165" fill="#3f3f46" font-family="'Courier New', Courier, monospace" font-size="7" letter-spacing="0.5">EVIDENCE CHAIN // EVERY WRITE IS TIMESTAMPED AND AUDITABLE</text>
+  <rect x="890" y="158" width="4" height="4" fill="#3f3f46">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="898" y="158" width="4" height="4" fill="#3f3f46">
+    <animate attributeName="opacity" values="0.2;1;0.2" begin="0.2s" dur="1s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="906" y="158" width="4" height="4" fill="#3f3f46">
+    <animate attributeName="opacity" values="0.2;1;0.2" begin="0.4s" dur="1s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- state to agents -->
+  <g stroke="#27272a" stroke-width="1" marker-end="url(#arrow)">
+    <line x1="143" y1="184" x2="143" y2="218"/>
+    <line x1="383" y1="184" x2="383" y2="218"/>
+    <line x1="623" y1="184" x2="623" y2="218"/>
+    <line x1="863" y1="184" x2="863" y2="218"/>
+  </g>
+  <rect x="-3" y="-3" width="6" height="6" fill="#52525b">
+    <animateMotion path="M143 184 V218" dur="1.8s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="-3" y="-3" width="6" height="6" fill="#52525b">
+    <animateMotion path="M383 184 V218" dur="1.8s" begin="0.45s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="-3" y="-3" width="6" height="6" fill="#52525b">
+    <animateMotion path="M623 184 V218" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="-3" y="-3" width="6" height="6" fill="#52525b">
+    <animateMotion path="M863 184 V218" dur="1.8s" begin="1.35s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- batch labels -->
+  <text x="36" y="205" fill="#52525b" font-family="'Courier New', Courier, monospace" font-size="8" letter-spacing="1.5">BATCH 1 // CONCURRENT</text>
+  <line x1="36" y1="210" x2="250" y2="210" stroke="#1f1f22" stroke-width="1"/>
+  <text x="516" y="205" fill="#52525b" font-family="'Courier New', Courier, monospace" font-size="8" letter-spacing="1.5">BATCH 2 // CONCURRENT</text>
+  <line x1="516" y1="210" x2="970" y2="210" stroke="#1f1f22" stroke-width="1"/>
+
+  <!-- agent cards -->
+  <!-- RISK -->
+  <g>
+    <rect x="36" y="222" width="214" height="140" fill="#0c0c0e" stroke="#27272a"/>
+    <rect x="36" y="222" width="214" height="3" fill="#ef4444">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.15;0.23;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="50" y="238" width="30" height="30" fill="#ef4444" fill-opacity="0.12" stroke="#ef4444" stroke-opacity="0.5"/>
+    <text x="65" y="259" text-anchor="middle" fill="#ef4444" font-family="'Courier New', Courier, monospace" font-size="16" font-weight="700">R</text>
+    <text x="92" y="251" fill="#fafafa" font-family="'Courier New', Courier, monospace" font-size="11" letter-spacing="1">RISK ASSESSMENT</text>
+    <text x="92" y="266" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="7.5">sensor + weather + building</text>
+    <text x="92" y="279" fill="#ef4444" font-family="'Courier New', Courier, monospace" font-size="7.5">writes risk_report</text>
+    <rect x="50" y="332" width="7" height="7" fill="#ef4444">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.15;0.20;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="63" y="339" fill="#a1a1aa" font-family="'Courier New', Courier, monospace" font-size="7">WRITING</text>
+    <rect x="50" y="348" width="186" height="5" fill="#18181b"/>
+    <rect x="50" y="348" width="0" height="5" fill="#ef4444">
+      <animate attributeName="width" values="0;0;186;186;0" keyTimes="0;0.15;0.23;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- VICTIM -->
+  <g>
+    <rect x="276" y="222" width="214" height="140" fill="#0c0c0e" stroke="#27272a"/>
+    <rect x="276" y="222" width="214" height="3" fill="#f59e0b">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.20;0.28;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="290" y="238" width="30" height="30" fill="#f59e0b" fill-opacity="0.12" stroke="#f59e0b" stroke-opacity="0.5"/>
+    <text x="305" y="259" text-anchor="middle" fill="#f59e0b" font-family="'Courier New', Courier, monospace" font-size="16" font-weight="700">V</text>
+    <text x="332" y="251" fill="#fafafa" font-family="'Courier New', Courier, monospace" font-size="11" letter-spacing="1">VICTIM LOCATION</text>
+    <text x="332" y="266" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="7.5">thermal + GPR + witness</text>
+    <text x="332" y="279" fill="#f59e0b" font-family="'Courier New', Courier, monospace" font-size="7.5">writes victim_map</text>
+    <rect x="290" y="332" width="7" height="7" fill="#f59e0b">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.20;0.25;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="303" y="339" fill="#a1a1aa" font-family="'Courier New', Courier, monospace" font-size="7">WRITING</text>
+    <rect x="290" y="348" width="186" height="5" fill="#18181b"/>
+    <rect x="290" y="348" width="0" height="5" fill="#f59e0b">
+      <animate attributeName="width" values="0;0;186;186;0" keyTimes="0;0.20;0.28;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- RESOURCE -->
+  <g>
+    <rect x="516" y="222" width="214" height="140" fill="#0c0c0e" stroke="#27272a"/>
+    <rect x="516" y="222" width="214" height="3" fill="#3b82f6">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.34;0.42;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="530" y="238" width="30" height="30" fill="#3b82f6" fill-opacity="0.12" stroke="#3b82f6" stroke-opacity="0.5"/>
+    <text x="545" y="259" text-anchor="middle" fill="#3b82f6" font-family="'Courier New', Courier, monospace" font-size="16" font-weight="700">C</text>
+    <text x="572" y="251" fill="#fafafa" font-family="'Courier New', Courier, monospace" font-size="11" letter-spacing="1">RESOURCE COORD</text>
+    <text x="572" y="266" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="7.5">risk + victim reports</text>
+    <text x="572" y="279" fill="#3b82f6" font-family="'Courier New', Courier, monospace" font-size="7.5">writes resource_allocation</text>
+    <rect x="530" y="332" width="7" height="7" fill="#3b82f6">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.34;0.39;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="543" y="339" fill="#a1a1aa" font-family="'Courier New', Courier, monospace" font-size="7">ALLOCATING</text>
+    <rect x="530" y="348" width="186" height="5" fill="#18181b"/>
+    <rect x="530" y="348" width="0" height="5" fill="#3b82f6">
+      <animate attributeName="width" values="0;0;186;186;0" keyTimes="0;0.34;0.42;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- KNOWLEDGE -->
+  <g>
+    <rect x="756" y="222" width="214" height="140" fill="#0c0c0e" stroke="#27272a"/>
+    <rect x="756" y="222" width="214" height="3" fill="#8b5cf6">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.42;0.50;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="770" y="238" width="30" height="30" fill="#8b5cf6" fill-opacity="0.12" stroke="#8b5cf6" stroke-opacity="0.5"/>
+    <text x="785" y="259" text-anchor="middle" fill="#8b5cf6" font-family="'Courier New', Courier, monospace" font-size="16" font-weight="700">K</text>
+    <text x="812" y="251" fill="#fafafa" font-family="'Courier New', Courier, monospace" font-size="11" letter-spacing="1">KNOWLEDGE RETRIEVAL</text>
+    <text x="812" y="266" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="7.5">risk + victim + building</text>
+    <text x="812" y="279" fill="#8b5cf6" font-family="'Courier New', Courier, monospace" font-size="7.5">writes knowledge_results</text>
+    <rect x="770" y="332" width="7" height="7" fill="#8b5cf6">
+      <animate attributeName="opacity" values="0.2;0.2;1;1;0.2" keyTimes="0;0.42;0.47;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="783" y="339" fill="#a1a1aa" font-family="'Courier New', Courier, monospace" font-size="7">SEARCHING</text>
+    <rect x="770" y="348" width="186" height="5" fill="#18181b"/>
+    <rect x="770" y="348" width="0" height="5" fill="#8b5cf6">
+      <animate attributeName="width" values="0;0;186;186;0" keyTimes="0;0.42;0.50;0.90;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- converge to orchestrator -->
+  <g stroke="#27272a" stroke-width="1" fill="none">
+    <path d="M143 362 V384"/>
+    <path d="M383 362 V384"/>
+    <path d="M623 362 V384"/>
+    <path d="M863 362 V384"/>
+    <path d="M143 384 H863"/>
+    <path d="M290 384 V416" marker-end="url(#arrow)"/>
+  </g>
+  <rect x="-3" y="-3" width="6" height="6" fill="#3b82f6">
+    <animateMotion path="M143 362 V384 H290 V416" dur="2.2s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="-3" y="-3" width="6" height="6" fill="#3b82f6">
+    <animateMotion path="M383 362 V384 H290 V416" dur="2.2s" begin="0.3s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="-3" y="-3" width="6" height="6" fill="#3b82f6">
+    <animateMotion path="M623 362 V384 H290 V416" dur="2.2s" begin="0.6s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="-3" y="-3" width="6" height="6" fill="#3b82f6">
+    <animateMotion path="M863 362 V384 H290 V416" dur="2.2s" begin="0.9s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- orchestrator -->
+  <rect x="120" y="420" width="340" height="132" fill="#0c0c0e" stroke="#27272a"/>
+  <text x="134" y="439" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="8" letter-spacing="1.5">05 // ORCHESTRATOR</text>
+  <g transform="translate(162 494)">
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="8s" repeatCount="indefinite"/>
+      <rect x="-4" y="-28" width="8" height="8" fill="#3b82f6" opacity="0.85"/>
+      <rect x="16" y="-20" width="8" height="8" fill="#3b82f6" opacity="0.6"/>
+      <rect x="24" y="0" width="8" height="8" fill="#3b82f6" opacity="0.85"/>
+      <rect x="16" y="20" width="8" height="8" fill="#3b82f6" opacity="0.6"/>
+      <rect x="-4" y="28" width="8" height="8" fill="#3b82f6" opacity="0.85"/>
+      <rect x="-24" y="20" width="8" height="8" fill="#3b82f6" opacity="0.6"/>
+      <rect x="-32" y="0" width="8" height="8" fill="#3b82f6" opacity="0.85"/>
+      <rect x="-24" y="-20" width="8" height="8" fill="#3b82f6" opacity="0.6"/>
+    </g>
+    <rect x="-8" y="-8" width="16" height="16" fill="#3b82f6">
+      <animate attributeName="opacity" values="0.55;1;0.55" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <text x="210" y="462" fill="#fafafa" font-family="'Courier New', Courier, monospace" font-size="17" font-weight="700" letter-spacing="2">ORCHESTRATOR</text>
+  <text x="210" y="480" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="8">reads every specialist report</text>
+  <text x="210" y="494" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="8">writes mission_briefing</text>
+  <text x="210" y="514" fill="#3f3f46" font-family="'Courier New', Courier, monospace" font-size="7.5" letter-spacing="0.5">GRAPH 5 NODES // 2 CONCURRENT BATCHES</text>
+  <rect x="210" y="522" width="230" height="4" fill="#18181b"/>
+  <rect x="210" y="522" width="0" height="4" fill="#22c55e">
+    <animate attributeName="width" values="0;0;230;230;0" keyTimes="0;0.62;0.78;0.90;1" dur="12s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- orchestrator to briefing -->
+  <line x1="460" y1="486" x2="520" y2="486" stroke="#27272a" stroke-width="1" marker-end="url(#arrow)"/>
+  <rect x="-3" y="-3" width="6" height="6" fill="#22c55e">
+    <animateMotion path="M460 486 H520" dur="1.4s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- briefing -->
+  <rect x="520" y="420" width="444" height="132" fill="#0c0c0e" stroke="#27272a"/>
+  <rect x="520" y="420" width="444" height="24" fill="#111113" stroke="#27272a"/>
+  <rect x="532" y="429" width="6" height="6" fill="#ef4444"/>
+  <rect x="542" y="429" width="6" height="6" fill="#f59e0b"/>
+  <rect x="552" y="429" width="6" height="6" fill="#22c55e"/>
+  <text x="570" y="436" fill="#71717a" font-family="'Courier New', Courier, monospace" font-size="8" letter-spacing="1.5">06 // MISSION BRIEFING</text>
+  <rect x="520" y="444" width="444" height="1" fill="#3b82f6" opacity="0.25">
+    <animate attributeName="y" values="444;552;444" dur="4s" repeatCount="indefinite"/>
+  </rect>
+
+  <g font-family="'Courier New', Courier, monospace" font-size="10" opacity="0.16">
+    <text x="536" y="464" fill="#fafafa">RISK ......... CRITICAL 0.86</text>
+    <text x="536" y="484" fill="#d4d4d8">VICTIMS ...... 3 ZONES</text>
+    <text x="536" y="504" fill="#d4d4d8">TEAMS ........ ALPHA + BRAVO</text>
+    <text x="536" y="524" fill="#22c55e">ACTION ....... ENTER VIA NORTH</text>
+  </g>
+
+  <g font-family="'Courier New', Courier, monospace" font-size="10">
+    <g fill="#fafafa">
+      <text x="536" y="464">RISK ......... CRITICAL 0.86</text>
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.74;0.79;0.96;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+    <g fill="#d4d4d8">
+      <text x="536" y="484">VICTIMS ...... 3 ZONES</text>
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.77;0.82;0.96;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+    <g fill="#d4d4d8">
+      <text x="536" y="504">TEAMS ........ ALPHA + BRAVO</text>
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.80;0.85;0.96;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+    <g fill="#22c55e">
+      <text x="536" y="524">ACTION ....... ENTER VIA NORTH</text>
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.83;0.88;0.96;1" dur="12s" repeatCount="indefinite"/>
+    </g>
+  </g>
+  <rect x="700" y="516" width="7" height="10" fill="#22c55e">
+    <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- footer -->
+  <line x1="36" y1="572" x2="964" y2="572" stroke="#18181b" stroke-width="1"/>
+  <g font-family="'Courier New', Courier, monospace" font-size="7" fill="#52525b" letter-spacing="1">
+    <rect x="36" y="582" width="7" height="7" fill="#3b82f6"/>
+    <text x="49" y="589">TELEMETRY</text>
+    <rect x="126" y="582" width="7" height="7" fill="#ef4444"/>
+    <text x="139" y="589">AGENTS</text>
+    <rect x="196" y="582" width="7" height="7" fill="#8b5cf6"/>
+    <text x="209" y="589">KNOWLEDGE</text>
+    <rect x="284" y="582" width="7" height="7" fill="#22c55e"/>
+    <text x="297" y="589">BRIEFING</text>
+  </g>
+  <text x="964" y="589" text-anchor="end" fill="#3f3f46" font-family="'Courier New', Courier, monospace" font-size="7" letter-spacing="1">CYCLE 12s // REPEAT</text>
+  <rect x="36" y="602" width="928" height="3" fill="#18181b"/>
+  <rect x="36" y="602" width="0" height="3" fill="#3b82f6">
+    <animate attributeName="width" values="0;928" dur="12s" repeatCount="indefinite"/>
+  </rect>
+</svg>
