@@ -315,14 +315,11 @@ function AgentSection() {
                   viewport={{ once: true, margin: '-40px' }}
                   transition={{ duration: 0.5, delay: Math.min(idx * 0.06, 0.3), ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <div className="glass-soft rounded-2xl overflow-hidden"
-                    style={{ border: `1px solid ${color}26`, boxShadow: agent?.status === 'active' ? `0 0 40px ${color}18` : '0 24px 60px -28px rgba(0,0,0,0.65)' }}>
+                  <div className="glass-soft overflow-hidden rounded-2xl border border-[#E2E7EE] bg-white shadow-[0_1px_3px_rgba(23,32,51,0.06)]">
                     {/* Panel header */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 md:px-7"
-                      style={{ background: `linear-gradient(90deg, ${color}10 0%, transparent 55%)`, borderBottom: `1px solid ${color}1f` }}>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E7EE] bg-[#F7F8FA] px-6 py-4 md:px-7">
                       <div className="flex min-w-0 items-center gap-3.5">
-                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-                          style={{ background: `${color}18`, border: `1px solid ${color}40`, boxShadow: agent?.status === 'active' ? `0 0 18px ${color}44` : 'none' }}>
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-[#E2E7EE] bg-white">
                           <Icon className="h-5 w-5" style={{ color }} />
                         </div>
                         <div className="min-w-0">

@@ -1,536 +1,560 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  /* Rajdhani: condensed technical display face for the HUD/command chrome */
-  --font-display: 'Rajdhani', 'Inter', sans-serif;
+/* ==========================================================================
+   Inzora Terra OS - Apple Minimalist UI
+   --------------------------------------------------------
+   Design language:
+   - San Francisco system font
+   - Minimal cards with subtle shadows
+   - Grayscale palette with selective accent
+   - Abundant whitespace
+   - Subtle, purposeful animations
+   - No vibrant gradients, no neon, no glassmorphism
+   ========================================================================== */
 
-  /* Glass design tokens - modern glassmorphism */
-  --glass-lighter: rgba(255, 255, 255, 0.08);
-  --glass-normal: rgba(255, 255, 255, 0.05);
-  --glass-heavy: rgba(255, 255, 255, 0.02);
-  --glass-border: rgba(255, 255, 255, 0.06);
+/* ------------------------------------------------------------------ */
+/* Base & Typography                                                  */
+/* ------------------------------------------------------------------ */
 
-  --glass-primary: rgba(59, 130, 246, 0.1);
-  --glass-success: rgba(34, 197, 94, 0.1);
-  --glass-warning: rgba(245, 158, 11, 0.1);
-  --glass-danger: rgba(239, 68, 68, 0.1);
-  --glass-purple: rgba(139, 92, 246, 0.1);
-
-  /* Blur levels */
-  --blur-light: blur(8px);
-  --blur-normal: blur(16px);
-  --blur-heavy: blur(24px);
-
-  /* Transitions */
-  --transition-fast: all 0.2s ease;
-  --transition-normal: all 0.3s ease;
-  --transition-slow: all 0.5s ease;
+/* Core font setup - system fonts for Apple-quality rendering */
+:root {
+  --font-display: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display-alt: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: Menlo, "SF Mono", "Fira Code", "Ubuntu Mono", monospace;
+  --terra-page: #f5f7fa;
+  --terra-card: #ffffff;
+  --terra-ink: #172033;
+  --terra-muted: #536176;
+  --terra-border: #e2e7ee;
+  --terra-accent: #2563eb;
 }
 
+/* HTML/html font-size setup for scalable compactness */
 html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   scroll-behavior: smooth;
 }
 
-html, body, #root {
-  min-height: 100%;
-  height: auto;
-}
-
 body {
-  font-family: var(--font-sans);
-  background: #09090b;
-  color: #fafafa;
-  overflow-x: hidden;
+  margin: 0;
+  font: var(--font-body);
+  line-height: 1.5;
+  color: var(--terra-ink);
+  background-color: var(--terra-page);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.65;
-  letter-spacing: 0.01em;
+  -webkit-text-size-adjust: 100%;
+  -webkit-text-security: none;
+  overflow-x: hidden;
+}
+
+/* Operational light theme: restrained surfaces, readable contrast, no glow. */
+.terra-app {
+  min-height: 100vh;
+  color: var(--terra-ink);
+  background: var(--terra-page);
+}
+
+.terra-app .glass-card,
+.terra-app .glass-soft {
+  background: var(--terra-card) !important;
+  border-color: var(--terra-border) !important;
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.terra-app .section-title { color: var(--terra-ink) !important; }
+.terra-app .reading-copy { color: var(--terra-muted) !important; }
+.terra-app button:focus-visible,
+.terra-app [role="button"]:focus-visible {
+  outline: 2px solid var(--terra-accent);
+  outline-offset: 2px;
+}
+
+/* Compatibility layer for legacy dashboard utility classes. This keeps the
+   existing component structure and behavior while bringing older sections
+   onto the same light operational palette. */
+.terra-app [class*="text-white"] { color: var(--terra-ink) !important; }
+.terra-app [class*="text-slate-"] { color: var(--terra-muted) !important; }
+.terra-app [class*="text-cyan-"] { color: var(--terra-accent) !important; }
+.terra-app [class*="text-emerald-"] { color: #15966A !important; }
+.terra-app [class*="text-rose-"] { color: #DC4545 !important; }
+.terra-app [class*="text-amber-"] { color: #D97706 !important; }
+.terra-app [class*="bg-white/"] { background-color: #ffffff !important; }
+.terra-app [class*="bg-[#11161d"] { background-color: var(--terra-card) !important; }
+.terra-app [class*="bg-[#0c1117"] { background-color: var(--terra-page) !important; }
+.terra-app [class*="bg-[#09090b"] { background-color: #ffffff !important; }
+.terra-app [class*="border-white"] { border-color: var(--terra-border) !important; }
+.terra-app [class*="border-cyan-"] { border-color: #bfdbfe !important; }
+.terra-app [class*="border-emerald-"] { border-color: #bbf7d0 !important; }
+.terra-app [class*="border-rose-"] { border-color: #fecdd3 !important; }
+
+/* Root-level typography scales */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+  color: #1d1d1f;
+}
+
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.875rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; }
+h6 { font-size: 1rem; }
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-family: var(--font-body);
+  color: #1d1d1f;
+}
+
+/* Links */
+a {
+  color: #0066c8;
+  text-decoration: none;
+  -webkit-text-decoration-skip: objects;
+}
+
+a:hover {
+  color: #0058bd;
+  text-decoration: underline;
 }
 
 /* ------------------------------------------------------------------ */
-/* Glassmorphism styles - enhanced layered glass effect */
+/* Layout                                                            */
+/* ------------------------------------------------------------------ */
 
-/* Neutral glass card - layered gradient with vibrant glow */
-.glass-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.045) 100%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  backdrop-filter: blur(28px) saturate(190%);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.09) inset,
-    0 4px 30px -5px rgba(0, 0, 0, 0.4),
-    0 8px 40px -10px rgba(0, 0, 0, 0.5),
-    0 0 24px -8px rgba(34, 211, 238, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  position: relative;
+/* Main content area - max width, generous margins */
+.main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
 }
 
-.glass-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.06) 28%,
-    rgba(255, 255, 255, 0.02) 62%,
-    rgba(255, 255, 255, 0.08) 100%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
+/* Full-bleed section */
+.section {
+  width: 100%;
+  margin: 2rem 0;
+  padding: 0;
 }
 
-.glass-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.24), transparent);
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-/* Soft glass - no edge ring for colored panels */
-.glass-soft {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.025) 100%);
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
-  backdrop-filter: blur(22px) saturate(170%);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 4px 20px -5px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  position: relative;
-}
-
-.glass-soft::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.04) 50%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-/* Command bar variant */
-.glass-nav {
-  background: linear-gradient(180deg, rgba(9, 9, 11, 0.82) 0%, rgba(9, 9, 11, 0.6) 100%);
-  -webkit-backdrop-filter: blur(32px) saturate(190%);
-  backdrop-filter: blur(32px) saturate(190%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.05) inset,
-    0 12px 40px -18px rgba(0, 0, 0, 0.8);
-  position: relative;
-}
-
-.glass-nav::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.4), transparent);
-  opacity: 0.7;
-}
-
-/* Enhanced glass hover states */
-.glass-interactive {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.glass-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.05) inset,
-    0 8px 40px -10px rgba(0, 0, 0, 0.5),
-    0 0 25px rgba(59, 130, 246, 0.2);
-}
-
-.glass-interactive:active {
-  transform: translateY(0);
-}
-
-/* Enhanced scrollbar with cyan glow */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(9, 9, 11, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.4), rgba(34, 197, 94, 0.4));
-  border-radius: 3px;
-  transition: all 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.6), rgba(34, 197, 94, 0.5));
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
-}
-
-.hud-flow-arrow {
-  stroke-dasharray: 6 5;
-  animation: hud-flow-dash 0.9s linear infinite;
-}
-
-@keyframes hud-flow-dash {
-  to { stroke-dashoffset: -11; }
-}
-
-/* Cut-corner HUD button (used by the map zoom controls) */
-.tech-corner {
-  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+/* Spacer */
+.space {
+  height: 1rem;
 }
 
 /* ------------------------------------------------------------------ */
-/* MapLibre attribution / controls polish (live geo map)               */
+/* Cards                                                             */
 /* ------------------------------------------------------------------ */
 
-.maplibregl-ctrl-attrib {
-  background: rgba(9, 9, 11, 0.6) !important;
-  color: rgba(255, 255, 255, 0.35) !important;
-  font-size: 8px !important;
-  font-family: 'JetBrains Mono', monospace;
+/* Minimal card - no glass, no gradients, just clean borders */
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e5e7;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
+  transition: box-shadow 0.2s ease;
 }
 
-.maplibregl-ctrl-attrib a {
-  color: rgba(255, 255, 255, 0.4) !important;
+.card:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(0, 0, 0, 0.02);
 }
 
-.maplibregl-ctrl-group {
-  background: rgba(9, 9, 11, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 8px !important;
-  overflow: hidden;
-  box-shadow: none !important;
+.card > :first-child {
+  margin-top: 0;
 }
 
-.maplibregl-ctrl-group button {
-  background: rgba(9, 9, 11, 0.85) !important;
-  color: rgba(34, 211, 238, 0.85) !important;
-  width: 28px !important;
-  height: 28px !important;
+.card > :last-child {
+  margin-bottom: 0;
 }
 
-.maplibregl-ctrl-group button:hover {
-  background: rgba(34, 211, 238, 0.15) !important;
+/* Minimal section card with header */
+.section-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e7;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.maplibregl-ctrl button .maplibregl-ctrl-icon {
-  filter: invert(70%) sepia(60%) saturate(600%) hue-rotate(140deg);
-}
-
-/* ------------------------------------------------------------------ */
-/* Mission zone markers (crisp SVG-style HTML markers)                 */
-/* ------------------------------------------------------------------ */
-
-.dexter-zone-marker {
-  width: 34px;
-  height: 34px;
-}
-
-.dz-ring {
-  position: relative;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+.section-card .section-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border: 2px solid var(--c, #22d3ee);
-  background: color-mix(in srgb, var(--c, #22d3ee) 14%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--c, #22d3ee) 45%, transparent);
-  animation: dz-pulse 2.4s ease-in-out infinite;
+  justify-content: space-between;
+  margin-bottom: 1rem;
 }
 
-.dz-core {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+.section-card .section-title {
+  font-family: var(--font-display-alt);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1d1d1f;
 }
 
-.dz-pct {
-  position: absolute;
-  bottom: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 8px;
-  color: #fff;
-  background: rgba(9, 9, 11, 0.8);
-  padding: 0 3px;
-  border-radius: 3px;
-  white-space: nowrap;
+.section-card .section-count {
+  font-size: 0.875rem;
+  color: #868e96;
 }
 
-@keyframes dz-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.95; }
-  50% { transform: scale(1.08); opacity: 0.75; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dz-pulse { animation: none; }
+/* Minimal alert */
+.alert {
+  background: #fff7e7;
+  border: 1px solid #ffd580;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: #854d0e;
 }
 
 /* ------------------------------------------------------------------ */
-/* Live map: light geographic base + mission overlay markers           */
+/* Buttons                                                             */
 /* ------------------------------------------------------------------ */
 
-/* The map container is never white — paper colour + subtle grid + place label
-   shows even before tiles load or if the tile CDN is unreachable. */
-.dm-map-bg {
-  background-color: #e7ebef;
-  background-image:
-    linear-gradient(to right, rgba(255,255,255,0.9) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,0.9) 1px, transparent 1px),
-    linear-gradient(to right, rgba(15,23,42,0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15,23,42,0.06) 1px, transparent 1px);
-  background-size: 90px 90px, 90px 90px, 90px 90px, 90px 90px;
-  position: relative;
-}
-.dm-map-bg::before {
-  content: 'Coimbatore · Disaster Site';
-  position: absolute;
-  left: 14px;
-  top: 14px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: rgba(15,23,42,0.35);
-  background: rgba(255,255,255,0.85);
-  border: 1px solid rgba(15,23,42,0.08);
-  padding: 2px 6px;
-  border-radius: 999px;
-  pointer-events: none;
-  z-index: 1;
-}
-.dm-map-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 30% 70%, rgba(169,212,245,0.35) 0%, transparent 55%),
-    radial-gradient(ellipse at 75% 75%, rgba(207,232,182,0.4) 0%, transparent 45%);
-  pointer-events: none;
-  z-index: 1;
+/* Primary button - clean and minimal */
+.btn-primary {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #0a66c2;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  align-self: stretch;
 }
 
-/* Shared mission marker shell — clean, minimal, no neon glow. */
-.dm-marker {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'JetBrains Mono', monospace;
-  user-select: none;
-  -webkit-user-select: none;
+.btn-primary:hover {
+  background-color: #0052a8;
 }
 
-.dm-emoji {
-  font-size: 18px;
-  line-height: 1;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+.btn-primary:active {
+  background-color: #004690;
 }
 
-.dm-tag {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 8px;
-  letter-spacing: 0.04em;
-  color: #0b1220;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 0 3px;
-  border-radius: 3px;
-  white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+/* Secondary outline button */
+.btn-secondary {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1d1d1f;
+  background: transparent;
+  border: 1px solid #e5e5e7;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 
-/* Victim detection */
-.dm-victim .dm-emoji { font-size: 17px; }
+.btn-secondary:hover {
+  border-color: #d1d5db;
+  color: #000000;
+}
 
-/* Rover — distinct, with a small pill label */
-.dm-rover {
+.btn-secondary:focus-visible {
+  outline: 2px solid #0066c8;
+  outline-offset: 2px;
+}
+
+/* Minimal danger button */
+.btn-danger {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  align-self: stretch;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c;
+}
+
+.btn-danger:active {
+  background-color: #991b1a;
+}
+
+/* ------------------------------------------------------------------ */
+/* Form elements                                                      */
+/* ------------------------------------------------------------------ */
+
+/* Input */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #1d1d1f;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #0066c8;
+  box-shadow: 0 0 0 2px rgba(0, 102, 200, 0.1);
+}
+
+select {
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem top 50%;
+  cursor: pointer;
+}
+
+/* Textarea */
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ------------------------------------------------------------------ */
+/* Notifications / Toasts                                              */
+/* ------------------------------------------------------------------ */
+
+/* Notification placeholder */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  gap: 0.75rem;
 }
-.dm-rover-pin {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #1f2937;
-  border: 2px solid #ffffff;
+
+/* Toast element */
+.toast {
+  background: #ffffff;
+  border: 1px solid #e5e5e7;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  gap: 0.75rem;
 }
-.dm-rover-pin .dm-emoji { font-size: 16px; }
-.dm-rover-label {
-  font-size: 8px;
-  letter-spacing: 0.08em;
+
+.toast-success {
+  border-left: 3px solid #10b981;
+}
+
+.toast-error {
+  border-left: 3px solid #ef4444;
+}
+
+.toast-info {
+  border-left: 3px solid #3b82f6;
+}
+
+/* ------------------------------------------------------------------ */
+/* Live indicator / pulse (subtle, no gradients)                         */
+/* ------------------------------------------------------------------ */
+
+/* Small pulse dot for live updates */
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Status badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+.badge-success {
+  background-color: #d1f7bb;
+  color: #052e31;
+}
+
+.badge-warning {
+  background: #fcd34d;
+  color: #1e293b;
+}
+
+.badge-error {
+  background: #f87171;
   color: #ffffff;
-  background: rgba(31, 41, 55, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 1px 5px;
-  border-radius: 999px;
-  white-space: nowrap;
 }
 
-/* Risk zone — translucent severity disc */
-.dm-risk {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 10px;
-  border: 1.5px solid var(--c, #22c55e);
-  background: color-mix(in srgb, var(--c, #22c55e) 16%, transparent);
-  box-shadow: inset 0 0 24px color-mix(in srgb, var(--c, #22c55e) 22%, transparent);
-}
-.dm-risk-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: var(--c, #22c55e);
-  background: rgba(255, 255, 255, 0.9);
-  padding: 1px 6px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--c, #22c55e) 40%, transparent);
+.badge-info {
+  background: #bfdbfe;
+  color: #1e40af;
 }
 
-/* Search area — dashed perimeter ring */
-.dm-search {
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  border: 2px dashed rgba(37, 99, 235, 0.55);
-  background: rgba(37, 99, 235, 0.06);
-}
-.dm-search-label {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  color: #1d4ed8;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(37, 99, 235, 0.3);
-  padding: 0 5px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
+/* ------------------------------------------------------------------ */
+/* Live indicator (simple circle, no gradients)                         */
+/* ------------------------------------------------------------------ */
 
-/* Hazard chip (gas / thermal) */
-.dm-hazard {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1.5px solid rgba(0, 0, 0, 0.12);
-  display: flex;
+.status-indicator {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-}
-
-/* Awaiting-mission empty-state pill */
-.dm-empty {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 500;
-}
-.dm-empty-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  padding: 0.25rem 0.5rem;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  font-size: 0.75rem;
   color: #475569;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  padding: 7px 14px;
-  border-radius: 999px;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
 }
-.dm-empty-dot {
-  width: 7px;
-  height: 7px;
+
+.status-indicator.success {
+  background: #d1f7bb;
+  color: #052e31;
+}
+
+.status-indicator.warning {
+  background: #fcd34d;
+  color: #1e293b;
+}
+
+.status-indicator.error {
+  background: #f87171;
+  color: #ffffff;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #94a3b8;
+  margin-right: 0.25rem;
 }
 
-/* Layer-control popover */
-.dm-layer-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 5px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.7);
-  transition: background 0.15s ease;
+/* Pulse (very subtle - just opacity) */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
-.dm-layer-row:hover { background: rgba(255, 255, 255, 0.06); }
-.dm-layer-check {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.dm-layer-check.on { background: #3b82f6; border-color: #3b82f6; }
 
-/* Header sensor tags */
-.dm-tag-chip {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  padding: 1px 6px;
-  border-radius: 999px;
-  border: 1px solid;
+/* ------------------------------------------------------------------ */
+/* Live status chips                                                   */
+/* ------------------------------------------------------------------ */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: #f3f4f6;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.status-dot-small {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.35rem;
+}
+
+/* .success: #10b981, .warning: #f59e3b, .error: #ef4444, .info: #3b82f6 */
+
+/* ------------------------------------------------------------------ */
+/* Typography accents                                                  */
+/* ------------------------------------------------------------------ */
+
+/* Small helpers */
+.text-xs { font-size: 0.75rem; color: #6b7280; }
+.text-sm { font-size: 0.875rem; color: #4b5563; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+
+/* Divider */
+.divider {
+  height: 1px;
+  background-color: #e5e5e7;
+  margin: 1.5rem 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 480px) {
+  .main {
+    padding: 1rem;
+  }
+
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Skip link (accessibility)                                          */
+/* ------------------------------------------------------------------ */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.skip-link:focus {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  width: auto;
+  height: auto;
+  background: #ffffff;
+  color: #1d1d1f;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
 }

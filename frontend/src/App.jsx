@@ -29,7 +29,6 @@ import DexterStatus from '@/components/DexterStatus'
 import TerraX from '@/components/TerraX'
 import BootSequence from '@/components/BootSequence'
 import MissionEngineStatus from '@/components/MissionEngineStatus'
-import HITLGate from '@/components/HITLGate'
 
 const BOOT_KEY = 'terra-boot-shown'
 
@@ -238,10 +237,10 @@ function AppInner() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="min-h-screen bg-[#09090b] text-[#fafafa]">
+    <div className="terra-app min-h-screen bg-[#F5F7FA] text-[#172033]">
       {/* Progress bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[1px] bg-white/20 origin-left z-[100]"
+        className="fixed top-0 left-0 right-0 h-[2px] bg-[#2563EB] origin-left z-[100]"
         style={{ scaleX: progressScale }}
       />
 
@@ -264,9 +263,6 @@ function AppInner() {
 
       {/* Terra X — local mission query panel; backend assistant endpoint is not active yet. */}
       <TerraX open={terraOpen} onOpenChange={setTerraOpen} />
-
-      {/* HITL Approval Gate — shown when human authorization is required */}
-      <HITLGate />
 
       {/* Mission Start Authorization — commander must explicitly approve before
           the engine starts streaming telemetry (Human-in-the-Loop). */}

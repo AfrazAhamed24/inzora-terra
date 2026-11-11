@@ -1,24 +1,22 @@
 /**
  * BootSequence - minimal system readiness screen.
- *
- * Phases: idle → boot → sensor check → standby. This is a local UI readiness
- * sequence, not proof of field hardware connectivity.
+ * Minimal Apple-design: clean, no glassmorphism, no gradients,
+ * neutral palette, system-ready feel.
  */
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Radar, Thermometer, Satellite, Navigation, Wind, Waves, Volume2, VolumeX } from 'lucide-react'
 import { voice } from '@/services/voice'
-import NeuralBackdrop from '@/components/NeuralBackdrop'
-import { HudFrame, RadarDial, TechButton, DataMarquee } from '@/components/hud'
+import { HudFrame, RadarDial } from '@/components/hud'
 
 const SENSORS = [
-  { id: 'gpr', name: 'GPR', detail: 'Subsurface radar', icon: Radar },
-  { id: 'thermal', name: 'THERMAL', detail: 'Heat signature array', icon: Thermometer },
-  { id: 'gps', name: 'GPS', detail: 'Position lock', icon: Satellite },
-  { id: 'imu', name: 'IMU', detail: 'Inertial orientation', icon: Navigation },
-  { id: 'gas', name: 'GAS', detail: 'Atmospheric monitor', icon: Wind },
-  { id: 'weather', name: 'WEATHER', detail: 'Environmental feed', icon: Waves },
+  { id: 'gpr', name: 'GPR', detail: 'Subsurface radar' },
+  { id: 'thermal', name: 'THERMAL', detail: 'Heat signature array' },
+  { id: 'gps', name: 'GPS', detail: 'Position lock' },
+  { id: 'imu', name: 'IMU', detail: 'Inertial orientation' },
+  { id: 'gas', name: 'GAS', detail: 'Atmospheric monitor' },
+  { id: 'weather', name: 'WEATHER', detail: 'Environmental feed' },
 ]
 
 const BOOT_LINES = [
@@ -120,22 +118,10 @@ export default function BootSequence({ onComplete }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.8 } }}
-      className="fixed inset-0 z-[200] bg-[#04050a] flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[200] bg-gray-950 flex items-center justify-center overflow-hidden"
       onClick={phase === 'idle' ? start : undefined}
     >
-      {/* Neural tactical backdrop */}
-      <NeuralBackdrop dense />
-
-      {/* Mute regulator */}
-      <TechButton
-        onClick={(e) => { e.stopPropagation(); toggleMute() }}
-        className="absolute top-6 right-6 z-10 w-10 h-10 flex items-center justify-center"
-        aria-label={muted ? 'Unmute voice prompts' : 'Mute voice prompts'}
-        title={muted ? 'Unmute voice prompts' : 'Mute voice prompts'}
-      >
-        {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-      </TechButton>
-
+      {/* Core wordmark + status */}
       <div className="relative z-10 w-full max-w-3xl px-5">
         <HudFrame className="p-6 md:p-8" right={PHASE_STATUS[phase]}>
           {/* Wordmark + tagline */}
@@ -144,17 +130,17 @@ export default function BootSequence({ onComplete }) {
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="text-4xl md:text-6xl font-display font-semibold tracking-[0.04em] text-white/95"
+              className="text-4xl md:text-6xl font-display font-semibold tracking-[0.04em] text-gray-100"
             >
               INZORA TERRA OS
             </motion.h1>
-            <p className="mt-2 text-[10px] md:text-xs font-display font-medium text-white/40 tracking-[0.34em] uppercase">
+            <p className="mt-2 text-[10px] md:text-xs font-display font-medium text-gray-400 tracking-[0.34em] uppercase">
               Disaster response mission control
             </p>
           </div>
 
           {/* Core dial + status column */}
-          <div className="flex flex-col md:flex-row items-center gap-8 mb-6">
+          <div className="flex flex-col md:flex-row items-center gap-6 mb-5">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -162,7 +148,7 @@ export default function BootSequence({ onComplete }) {
               className="flex flex-col items-center gap-2"
             >
               <RadarDial size={172} />
-              <div className="text-[9px] font-display font-semibold tracking-[0.28em] text-cyan-400/50 uppercase">
+              <div className="text-[9px] font-display font-semibold tracking-[0.28em] text-gray-500 uppercase">
                 {phase === 'scan' && !scanDone ? 'Acquiring…' : phase === 'done' ? 'Locked' : 'Sensors'}
               </div>
             </motion.div>
@@ -174,16 +160,16 @@ export default function BootSequence({ onComplete }) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
-                  className="flex flex-col items-center md:items-start gap-5"
+                  className="flex flex-col items-center md:items-start gap-4"
                 >
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-emerald-400/25 bg-emerald-400/5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[11px] font-display font-semibold tracking-[0.3em] text-emerald-300/85 uppercase">System Ready</span>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-gray-900/5 border border-gray-700/30">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-700 animate-pulse" />
+                    <span className="text-[11px] font-display font-semibold tracking-[0.3em] text-gray-400 uppercase">System Ready</span>
                   </div>
                   <motion.div
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{ repeat: Infinity, duration: 1.6 }}
-                    className="text-xs font-display font-medium text-white/55 tracking-[0.3em] uppercase"
+                    className="text-xs font-display font-medium text-gray-500 tracking-[0.3em] uppercase"
                   >
                     Click anywhere to initialize
                   </motion.div>
@@ -197,10 +183,10 @@ export default function BootSequence({ onComplete }) {
                       key={line}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-3 text-left"
+                      className="flex items-center gap-2 text-left"
                     >
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]" />
-                      <span className="text-[11px] font-mono text-cyan-100/70 tracking-wide">{line}</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-gray-700" />
+                      <span className="text-[11px] font-mono text-gray-300 tracking-wide">{line}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -209,25 +195,21 @@ export default function BootSequence({ onComplete }) {
               {phase === 'scan' && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
                   {SENSORS.map((s, i) => {
-                    const Icon = s.icon
                     const isOnline = i < online
                     return (
                       <motion.div
                         key={s.id}
                         initial={{ opacity: 0.3 }}
-                        animate={{ opacity: isOnline ? 1 : 0.32 }}
-                        className={`hud-frame px-3 py-2.5 ${isOnline ? '' : 'opacity-60'}`}
-                        style={{ clipPath: 'polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px))' }}
+                        animate={{ opacity: isOnline ? 1 : 0.3 }}
+                        className="p-2 rounded bg-gray-900/5 border border-gray-700/30 flex flex-col items-center gap-1"
                       >
-                        <div className="flex items-center gap-2">
-                          <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isOnline ? 'text-emerald-400' : 'text-white/30'}`} />
-                          <div className="min-w-0">
-                            <div className={`text-[10px] font-display font-semibold tracking-[0.18em] truncate ${isOnline ? 'text-white/85' : 'text-white/35'}`}>
-                              {s.name}
-                            </div>
-                            <div className="text-[8px] font-mono text-white/25 truncate">
-                              {isOnline ? '● ONLINE' : s.detail.toUpperCase()}
-                            </div>
+                        <div className="w-3 h-3 rounded-full bg-gray-700" />
+                        <div>
+                          <div className="text-[10px] font-display font-semibold tracking-[0.18em] text-gray-300">
+                            {s.name}
+                          </div>
+                          <div className="text-[8px] font-mono text-gray-500/50">
+                            {isOnline ? 'ONLINE' : s.detail.toUpperCase()}
                           </div>
                         </div>
                       </motion.div>
@@ -240,10 +222,10 @@ export default function BootSequence({ onComplete }) {
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-center md:justify-start gap-3"
+                  className="flex items-center justify-center md:justify-start gap-2"
                 >
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-display font-semibold tracking-[0.3em] text-white/75 uppercase">
+                  <div className="w-2 h-2 rounded-full bg-gray-700 animate-pulse" />
+                  <span className="text-xs font-display font-semibold tracking-[0.3em] text-gray-400 uppercase">
                     Mission engine standing by
                   </span>
                 </motion.div>
@@ -252,19 +234,19 @@ export default function BootSequence({ onComplete }) {
           </div>
 
           {/* Mission progress meter */}
-          <div className="pt-5 border-t border-cyan-400/10">
+          <div className="pt-4 border-t border-gray-700/20 mb-5">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[9px] font-display font-semibold tracking-[0.3em] text-cyan-300/60 uppercase">Mission Progress</span>
-              <span className="text-sm font-display font-bold text-cyan-300">{meterValue}%</span>
+              <span className="text-[9px] font-display font-semibold tracking-[0.3em] text-gray-500/60 uppercase">Mission Progress</span>
+              <span className="text-sm font-display font-bold text-gray-300">{meterValue}%</span>
             </div>
-            <div className="h-[6px] w-full bg-white/5 overflow-hidden">
+            <div className="h-1 w-full bg-gray-900/50 overflow-hidden rounded">
               <motion.div
                 animate={{ width: `${meterValue}%` }}
                 transition={{ duration: 0.2, ease: 'linear' }}
-                className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.7)]"
+                className="h-full bg-gray-700"
               />
             </div>
-            <div className="mt-2 flex justify-between text-[8px] font-mono text-white/20">
+            <div className="mt-2 flex justify-between text-[8px] font-mono text-gray-500/30">
               {['CORE', 'MESH', 'UPLINK', 'GRID', 'AGENTS', 'ORCHESTRATE'].map((s) => (
                 <span key={s}>{s}</span>
               ))}
@@ -273,19 +255,21 @@ export default function BootSequence({ onComplete }) {
         </HudFrame>
 
         {/* Scrolling data footer */}
-        <DataMarquee
-          text={DATA_FOOTER}
-          className="mt-4 text-[10px] font-mono text-cyan-400/25 tracking-[0.2em]"
-        />
+        <div className="mt-4 flex items-center justify-center">
+          <span className="text-[9px] font-mono text-gray-500/25 tracking-[0.2em]">
+            {DATA_FOOTER}
+          </span>
+        </div>
       </div>
 
+      {/* Voice state status pill */}
       <AnimatePresence>
         {phase !== 'idle' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute bottom-6 text-[10px] font-display font-medium tracking-[0.3em] text-white/20 uppercase"
+            className="absolute bottom-4 text-[9px] font-display font-medium tracking-[0.3em] text-gray-400 uppercase"
           >
             {phase === 'done' ? 'Initiating mission' : 'Initializing…'}
           </motion.div>

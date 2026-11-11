@@ -1,26 +1,16 @@
-/**
- * HeroSection - mission status overview.
- *
- * Connected to mission telemetry when available. Defaults are marked as demo state.
- *
- * Keeps the primary focus on mission status, sensors, and authorization state.
- */
+/** Compact mission overview shown before the live dashboard. */
 
-import { useMemo } from 'react'
-import { motion } from 'framer-motion'
-import { Thermometer, Wind, Droplets, Eye, Waves, Ship, ArrowDown } from 'lucide-react'
 import { useEnvironment, useMissionStage, useIsRunning } from '@/context/MissionContext'
-import NeuralBackdrop from '@/components/NeuralBackdrop'
 
 function SensorBadge({ icon, label, value }) {
   return (
-    <div className="glass-card flex items-center gap-3 rounded-xl px-4 py-3">
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/55">
+    <div className="flex min-w-[112px] items-center gap-2 border-l border-[#E2E7EE] px-3 py-1 first:border-l-0">
+      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-[#F5F7FA] text-sm">
         {icon}
       </div>
       <div className="leading-tight">
-        <div className="text-[8px] font-display font-semibold text-white/35 tracking-[0.18em]">{label}</div>
-        <div className="mt-0.5 font-mono text-sm text-white/70">{value}</div>
+        <div className="text-xs font-medium text-[#526078]">{label}</div>
+        <div className="mt-1 font-mono text-sm font-semibold text-[#172033]">{value}</div>
       </div>
     </div>
   )
@@ -31,28 +21,7 @@ function HeroSection() {
   const stage = useMissionStage()
   const isRunning = useIsRunning()
 
-  // Stable particle positions — seeded PRNG so they don't jitter on re-render
-  const particles = useMemo(() => Array.from({ length: 80 }, (_, i) => {
-    let s = i * 2654435761
-    s = ((s >>> 16) ^ s) * 0x45d9f3b
-    s = ((s >>> 16) ^ s) * 0x45d9f3b
-    s = (s >>> 16) ^ s
-    const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
-    return {
-      left: `${rand() * 100}%`,
-      top: `${rand() * 100}%`,
-      duration: 8 + rand() * 12,
-      delay: rand() * 5,
-    }
-  }), [])
-
-  // Extract sensor data from environment (with fallbacks for demo)
-  const thermal = Math.round((environment.temperature || 32.4))
-  const wind = Math.round((environment.wind_speed || 12.8 * 10) / 10 * 10) / 10
-  const humidity = Math.round(environment.humidity || 67)
-  const visibility = Math.round((environment.visibility || 0.8) * 10) / 10
-
-  // Stage-based status text
+  // stable stage text
   const stageText = {
     created: 'SYSTEM ONLINE',
     initialized: 'MISSION INITIALIZED',
@@ -82,206 +51,34 @@ function HeroSection() {
 
   const isActiveRunning = isRunning || isActive
 
+  const thermal = environment.temperature == null ? null : Math.round(environment.temperature)
+  const wind = environment.wind_speed == null ? null : Math.round(environment.wind_speed * 10) / 10
+  const humidity = environment.humidity == null ? null : Math.round(environment.humidity)
+  const visibility = environment.visibility == null ? null : Math.round(environment.visibility * 10) / 10
+  const metric = (value, suffix = '') => value == null ? '—' : `${value}${suffix}`
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Neural tactical backdrop */}
-      <NeuralBackdrop dense={isActiveRunning} />
-
-        {/* Subtle background layers */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Slow drift layer */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-b from-[#0a0a0f] via-[#09090b] to-[#04050a]"
-          animate={{
-            backgroundPosition: ['0% 0%', '0% 20px', '0% 0%'],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-        />
-
-        {/* Deep water layers - slowly undulating */}
-        <motion.div
-          className="absolute -top-1/2 -left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-cyan-500/5 via-blue-500/5 to-purple-500/10 blur-3xl"
-          animate={{
-            x: [0, 50, -30, 0],
-            y: [0, -40, 20, 0],
-            scale: [1, 1.05, 1.1, 1.05, 1],
-            opacity: [0.3, 0.4, 0.35, 0.3],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-1/2 -right-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-purple-500/5 via-pink-500/5 to-cyan-500/10 blur-3xl"
-          animate={{
-            x: [0, -50, 30, 0],
-            y: [0, 40, -20, 0],
-            scale: [1, 1.08, 1.15, 1.1, 1],
-            opacity: [0.25, 0.35, 0.3, 0.25],
-          }}
-          transition={{
-            duration: 35,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 2,
-          }}
-        />
-
-        {/* Surface disturbance waves - slowly spreading */}
-        <motion.div
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[200px] rounded-full bg-cyan-500/5"
-          animate={{
-            width: ['800px', '820px', '800px'],
-            height: ['200px', '220px', '200px'],
-            opacity: [0.15, 0.25, 0.15],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-
-        {/* Subtle particle field for depth — stable positions across re-renders */}
-        <div className="absolute inset-0">
-          {particles.map((p, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-[2px] h-[2px] rounded-full bg-white/15"
-              style={{ left: p.left, top: p.top }}
-              animate={{ y: [0, -20, 0], opacity: [0, 0.4, 0] }}
-              transition={{ duration: p.duration, repeat: Infinity, delay: p.delay, ease: 'linear' }}
-            />
-          ))}
+    <section className="border-b border-[#E2E7EE] bg-white px-4 pb-5 pt-[4.5rem] sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#2563EB]">
+            <span className={`h-2 w-2 rounded-full ${isActiveRunning ? 'bg-[#15966A]' : 'bg-[#526078]'}`} />
+            <span>{isActiveRunning ? 'Mission active' : 'Mission standby'}</span>
+            <span className="text-[#A2ACBA]">·</span>
+            <span className="font-normal text-[#526078]">{stageText}</span>
+          </div>
+          <h1 className="mt-2 text-[30px] font-semibold tracking-[-0.03em] text-[#172033]">Mission overview</h1>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-[#526078]">
+            Live environmental context and mission status for the current response operation.
+          </p>
         </div>
 
-        {/* Product watermark */}
-        <motion.div
-          className="absolute bottom-8 right-8 text-[140px] font-display font-bold tracking-[0.1em] pointer-events-none"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(59, 130, 246, 0.02))',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-            textShadow: '0 0 40px rgba(59, 130, 246, 0.05)',
-          }}
-          animate={{
-            opacity: [0.03, 0.05, 0.03],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          TERRA
-        </motion.div>
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 text-center px-6 max-w-4xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="mb-6"
-        >
-          <motion.div
-            animate={{
-              boxShadow: [
-                '0 0 0px rgba(34, 211, 238, 0.3)',
-                '0 0 20px rgba(34, 211, 238, 0.5)',
-                '0 0 0px rgba(34, 211, 238, 0.3)',
-              ],
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="glass-card inline-flex items-center gap-2.5 rounded-full px-5 py-2.5"
-          >
-            <motion.div
-              animate={{
-                scale: isActiveRunning ? [1, 1.2, 1] : 1,
-              }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              className={`h-2 w-2 rounded-full ${isActiveRunning ? 'bg-cyan-400 animate-pulse' : 'bg-white/30'}`}
-            />
-            <span className="text-xs font-display font-medium tracking-[0.22em] text-white/70 uppercase">
-              {stageText}
-            </span>
-          </motion.div>
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="mb-5 font-display text-5xl font-semibold tracking-[-0.03em] md:text-7xl lg:text-8xl"
-        >
-          Inzora Terra OS
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-3 text-sm font-display font-medium tracking-[0.32em] text-white/50 uppercase"
-        >
-          Disaster Response Mission Control
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.25 }}
-          className="mb-12 text-[10px] font-mono tracking-[0.25em] text-white/25 uppercase"
-        >
-          Risk · victim · resource · knowledge · rescue coordination
-        </motion.p>
-
-        {/* Sensor badges with enhanced glass effect */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-4"
-        >
-          <SensorBadge icon={<Thermometer className="w-3.5 h-3.5" />} label="THERMAL" value={`${thermal}°C`} />
-          <SensorBadge icon={<Wind className="w-3.5 h-3.5" />} label="WIND" value={`${wind} m/s`} />
-          <SensorBadge icon={<Droplets className="w-3.5 h-3.5" />} label="HUMIDITY" value={`${humidity}%`} />
-          <SensorBadge icon={<Eye className="w-3.5 h-3.5" />} label="VISIBILITY" value={`${visibility} km`} />
-          <SensorBadge icon={<Waves className="w-3.5 h-3.5" />} label="DEPTH" value={environment.depth || '3.2m'} />
-          <SensorBadge icon={<Ship className="w-3.5 h-3.5" />} label="STATUS" value={isActiveRunning ? 'ACTIVE' : 'STANDBY'} />
-        </motion.div>
-
-        <motion.a
-          href="#mission-dashboard"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-10 inline-flex items-center gap-2 text-[10px] font-display font-semibold tracking-[0.24em] text-cyan-300/70 uppercase transition-colors hover:text-cyan-200"
-        >
-          Open mission dashboard
-          <ArrowDown className="h-3.5 w-3.5" />
-        </motion.a>
-
-        {/* DEXTER activation prompt */}
-        {isActiveRunning && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="mt-12"
-          >
-            <motion.span
-              className="text-[9px] font-mono tracking-[0.2em] text-white/40 uppercase"
-              animate={{ opacity: [0.4, 0.6, 0.4] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            >
-              Say "DEXTER" to activate voice command
-            </motion.span>
-          </motion.div>
-        )}
+        <div className="flex flex-wrap items-center gap-y-2 rounded-xl border border-[#E2E7EE] bg-[#F5F7FA] py-2 lg:shrink-0">
+          <SensorBadge icon="🌡" label="Thermal" value={metric(thermal, '°C')} />
+          <SensorBadge icon="💨" label="Wind" value={metric(wind, ' m/s')} />
+          <SensorBadge icon="💧" label="Humidity" value={metric(humidity, '%')} />
+          <SensorBadge icon="👁" label="Visibility" value={metric(visibility, ' km')} />
+        </div>
       </div>
     </section>
   )

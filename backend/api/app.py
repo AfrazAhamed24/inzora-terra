@@ -14,7 +14,7 @@ from fastapi import FastAPI
 
 from backend.api import __version__
 from backend.api.middleware import install_middleware
-from backend.api.routes import assistant, health, hitl, missions, replay, telemetry
+from backend.api.routes import assistant, health, hitl, missions, replay, telemetry, knowledge
 from backend.api.services.mission_service import MissionService
 from backend.api.services.replay_service import ReplayService
 from backend.api.services.stream_service import MissionStreamService
@@ -70,6 +70,7 @@ def create_app(
     app.include_router(replay.router, prefix=API_PREFIX)
     app.include_router(hitl.router, prefix=API_PREFIX)
     app.include_router(assistant.router, prefix=API_PREFIX)
+    app.include_router(knowledge.router, prefix=API_PREFIX)
 
     return app
 
