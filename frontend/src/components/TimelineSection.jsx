@@ -3,6 +3,7 @@
  *
  * Connected to live: timeline events from context (SSE stream).
  * Shows agent execution flow with thinking indicators and handoff visualization.
+ * Premium dark theme with aerospace accent colours.
  */
 
 import { motion } from 'framer-motion'
@@ -10,7 +11,7 @@ import { useMissionContext } from '@/context/MissionContext'
 import { ArrowDown, Zap, Shield, MapPin, Users, BookOpen, HeartPulse, Brain } from 'lucide-react'
 
 const DEFAULT_EVENTS = [
-  { time: new Date().toISOString(), agent: 'System', color: '#6b7280', message: 'Awaiting mission start...' },
+  { time: new Date().toISOString(), agent: 'System', color: '#3b82f6', message: 'Awaiting mission start...' },
 ]
 
 /** Rolling window so a long mission stays a clean one-shot story instead of a flood. */
@@ -61,19 +62,19 @@ function TimelineSection() {
     const stage = event.stage || ''
     if (stage.includes('decision')) return '#f59e0b'
     if (stage.includes('failed') || stage.includes('retry')) return '#ef4444'
-    if (stage.includes('complete')) return '#22c55e'
-    if (stage.includes('handoff')) return '#22d3ee'
+    if (stage.includes('complete')) return '#10b981'
+    if (stage.includes('handoff')) return '#3b82f6'
     if (stage.includes('stage_change')) return '#3b82f6'
-    return event.color || '#6b7280'
+    return '#6b728b'
   }
 
   return (
-    <section className="px-6 py-24">
+    <section className="px-6 py-24 bg-[#0d0d0f]">
       <div className="mx-auto max-w-3xl">
         <div className="mb-12">
           <div className="section-eyebrow mb-4">Mission Log</div>
           <h2 className="section-title font-display text-3xl font-semibold tracking-[0.04em] md:text-4xl">Timeline</h2>
-          <p className="mt-3 font-mono text-xs text-white/35">
+          <p className="mt-3 font-mono text-xs text-[#6b728b]">
             {events.length} event{events.length !== 1 ? 's' : ''} recorded
           </p>
         </div>
@@ -94,18 +95,18 @@ function TimelineSection() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: Math.min(idx, 15) * 0.04, duration: 0.3 }}
-                className={`flex gap-4 rounded-lg px-4 py-3 transition-all duration-200 ${
-                  isDecision ? 'bg-amber-500/5 border border-amber-500/15' :
-                  isHandoff ? 'bg-cyan-500/5 border border-cyan-500/10' :
-                  'glass-card'
+                className={`flex gap-4 rounded-lg glass-surface px-4 py-3 border border-[#3f444f] transition-all duration-200 ${
+                  isDecision ? 'border-[#f59e0b] bg-[#1e2328] text-[#fafafa]' :
+                  isHandoff ? 'border-[#3b82f6] bg-[#1e2328] text-[#cfe7ff]' :
+                                  'glass-surface text-[#fafafa]'
                 }`}
               >
-                <div className="w-14 flex-shrink-0 pt-0.5 font-mono text-[10px] text-white/25">
+                <div className="w-14 flex-shrink-0 pt-0.5 font-mono text-[8px] text-[#6b728b]">
                   {formatTime(event.time)}
                 </div>
                 <div className="flex flex-col items-center gap-1 flex-shrink-0">
                   <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[7px]"
                     style={{ background: `${accent}20`, color: accent, border: `1px solid ${accent}40` }}
                   >
                     {icon}
@@ -116,16 +117,16 @@ function TimelineSection() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-display text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: accent }}>
+                    <span className="font-display text-[9px] font-semibold tracking-[0.12em] uppercase" style={{ color: accent }}>
                       {event.agent}
                     </span>
                     {event.stage && (
-                      <span className="text-[8px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-white/30 uppercase tracking-[0.1em]">
+                      <span className="text-[7px] font-mono px-1.5 py-0.5 rounded glass-surface bg-[#1e2328] border border-[#3f444f] uppercase tracking-[0.08em]">
                         {event.stage.replace(/_/g, ' ')}
                       </span>
                     )}
                   </div>
-                  <p className="text-[12px] leading-[1.7] text-white/55">{event.message}</p>
+                  <p className="text-[10px] leading-[1.6] text-[#a3a6af]">{event.message}</p>
                 </div>
               </motion.div>
             )

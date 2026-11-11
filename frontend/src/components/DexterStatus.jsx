@@ -1,6 +1,7 @@
 /**
  * DexterStatus - caption strip with voice state indicators.
- * Minimal Apple-design: clean strip, no glassmorphism, neutral palette.
+ * Premium dark theme with aerospace accent colours.
+ * Voice assistance is a core Inzora Terra capability.
  */
 
 import { useEffect, useState } from 'react'
@@ -46,6 +47,11 @@ export default function DexterStatus({ voiceState = VoiceState.IDLE }) {
   const label = STATE_CONFIG[activeState]?.label || ''
   const IconComp = STATE_CONFIG[activeState]?.icon || Bot
 
+  const bgColor = activeState !== VoiceState.IDLE ? '#1e2328' : '#0d0d0f'
+  const borderColor = activeState !== VoiceState.IDLE ? '#3f444f' : '#3f444f'
+  const textColor = activeState !== VoiceState.IDLE ? '#a3a6af' : '#6b728b'
+  const accentColor = activeState !== VoiceState.IDLE ? '#3b82f6' : '#6b728b'
+
   return (
     <AnimatePresence mode="wait">
       {(showState || showCaption) && (
@@ -57,14 +63,14 @@ export default function DexterStatus({ voiceState = VoiceState.IDLE }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 14 }}
           transition={{ duration: 0.35 }}
-          className="fixed bottom-7 left-1/2 z-40 flex max-w-[min(90vw,38rem)] -translate-x-1/2 items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-2 pointer-events-none text-[10px] font-display font-medium uppercase tracking-[0.2em] text-gray-400"
+          className="fixed bottom-7 left-1/2 z-40 flex max-w-[min(90vw,38rem)] -translate-x-1/2 items-center gap-2 rounded-full border bg-[#0d0d0f] border-[#3f444f] px-3 py-2 pointer-events-none font-display font-medium uppercase tracking-[0.2em] text-[9px] text-[#6b728b]"
         >
           {/* State indicator icon */}
           {showState && (
-            <div className="relative shrink-0 w-6 h-6 rounded-full bg-white/20 border border-white/20 flex items-center justify-center">
-              <IconComp className="w-2.5 h-2.5 text-white/40" />
+            <div className="relative shrink-0 w-6 h-6 rounded-full border bg-[#1e2328] border-[#3f444f] flex items-center justify-center">
+              <IconComp className="w-2.5 h-2.5 text-[#3b82f6]" />
               {(activeState === VoiceState.LISTENING || activeState === VoiceState.THINKING || activeState === VoiceState.COMMAND_LISTENING) && (
-                <div className="absolute inset-0 rounded-full border border-white/20 animate-pulse opacity-30" />
+                <div className="absolute inset-0 rounded-full border border-[#3f444f] animate-pulse opacity-30" />
               )}
             </div>
           )}
@@ -72,13 +78,13 @@ export default function DexterStatus({ voiceState = VoiceState.IDLE }) {
           <div className="min-w-0">
             {/* State label */}
             {showState && (
-              <div className="text-[9px] font-display font-semibold uppercase tracking-[0.2em] text-gray-400 mb-0.5">
+              <div className="text-[8px] font-display font-semibold uppercase tracking-[0.2em] text-[#6b728b] mb-0.5">
                 Voice · {label}
               </div>
             )}
             {/* Caption text */}
             {showCaption && (
-              <p className="text-[11px] text-gray-300 leading-snug truncate max-w-[28rem]">
+              <p className="text-[9px] text-[#6b728b] leading-snug truncate max-w-[28rem]">
                 {line}
               </p>
             )}

@@ -271,9 +271,10 @@ function ReportBody({ id, data }) {
   // Fallback: render anything as labeled rows (flat dict).
   return (
     <div className="space-y-0">
-      {Object.entries(data).filter(([k]) => !['cycle_id', 'as_of', 'confidence'].includes(k)).map(([k, v]) => (
-        <Row key={k} label={k.replace(/_/g, ' ')}>{typeof v === 'object' ? JSON.stringify(v) : String(v)}</Row>
-      ))}
+      {Object.entries(data).filter(([k]) => !['cycle_id', 'as_of', 'confidence'].includes(k)).map(([k, v]) => {
+          const label = String(v)
+          return <Row key={k} label={label} />
+        })}
     </div>
   )
 }

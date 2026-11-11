@@ -1,33 +1,39 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   Inzora Terra OS - Apple Minimalist UI
+   Inzora Terra OS - Aerospace Command Centre UI
    --------------------------------------------------------
    Design language:
-   - San Francisco system font
-   - Minimal cards with subtle shadows
-   - Grayscale palette with selective accent
-   - Abundant whitespace
-   - Subtle, purposeful animations
-   - No vibrant gradients, no neon, no glassmorphism
+   - Deep OLED black and charcoal backgrounds
+   - Restrained cyan, electric blue, and emergency amber accents
+   - Professional typography with strong hierarchy
+   - Precise spacing and alignment
+   - Subtle borders and layered surfaces
+   - Controlled lighting and glow
+   - Compact operational panels
+   - Clear status indicators
+   - Excellent readability and contrast
    ========================================================================== */
 
 /* ------------------------------------------------------------------ */
-/* Base & Typography                                                  */
+   /* Base & Typography                                                  */
 /* ------------------------------------------------------------------ */
 
-/* Core font setup - system fonts for Apple-quality rendering */
+/* Core font setup - system fonts for professional rendering */
 :root {
   --font-display: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display-alt: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: Menlo, "SF Mono", "Fira Code", "Ubuntu Mono", monospace;
-  --terra-page: #f5f7fa;
-  --terra-card: #ffffff;
-  --terra-ink: #172033;
-  --terra-muted: #536176;
-  --terra-border: #e2e7ee;
-  --terra-accent: #2563eb;
+  --font-mono: "JetBrains Mono", "Fira Code", "Ubuntu Mono", monospace;
+  --terra-bg-primary: #09090b;
+  --terra-bg-secondary: #111827;
+  --terra-bg-tertiary: #18181b;
+  --terra-ink: #fafafa;
+  --terra-muted: #a3a6af;
+  --terra-border: #30363d;
+  --terra-accent: #3b82f6;
+  --terra-accent-emergency: #f87171;
+  --terra-accent-amber: #f59e0b;
 }
 
 /* HTML/html font-size setup for scalable compactness */
@@ -42,98 +48,87 @@ body {
   font: var(--font-body);
   line-height: 1.5;
   color: var(--terra-ink);
-  background-color: var(--terra-page);
+  background-color: var(--terra-bg-primary);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   -webkit-text-security: none;
   overflow-x: hidden;
 }
 
-/* Operational light theme: restrained surfaces, readable contrast, no glow. */
+/* OLED-optimized dark theme: deep charcoal surfaces, readable contrast, subtle glow */
 .terra-app {
   min-height: 100vh;
   color: var(--terra-ink);
-  background: var(--terra-page);
+  background: var(--terra-bg-primary);
 }
 
-.terra-app .glass-card,
-.terra-app .glass-soft {
-  background: var(--terra-card) !important;
-  border-color: var(--terra-border) !important;
-  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.06) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+/* Glass surface variants for layered depth */
+.glass-surface {
+  background: rgba(9, 9, 11, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--terra-border);
 }
 
-.terra-app .section-title { color: var(--terra-ink) !important; }
-.terra-app .reading-copy { color: var(--terra-muted) !important; }
-.terra-app button:focus-visible,
-.terra-app [role="button"]:focus-visible {
-  outline: 2px solid var(--terra-accent);
-  outline-offset: 2px;
+/* Glass panel - primary interactive surface */
+.glass-panel {
+  background: rgba(9, 9, 11, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--terra-border);
+  border-radius: 12px;
 }
 
-/* Compatibility layer for legacy dashboard utility classes. This keeps the
-   existing component structure and behavior while bringing older sections
-   onto the same light operational palette. */
-.terra-app [class*="text-white"] { color: var(--terra-ink) !important; }
-.terra-app [class*="text-slate-"] { color: var(--terra-muted) !important; }
-.terra-app [class*="text-cyan-"] { color: var(--terra-accent) !important; }
-.terra-app [class*="text-emerald-"] { color: #15966A !important; }
-.terra-app [class*="text-rose-"] { color: #DC4545 !important; }
-.terra-app [class*="text-amber-"] { color: #D97706 !important; }
-.terra-app [class*="bg-white/"] { background-color: #ffffff !important; }
-.terra-app [class*="bg-[#11161d"] { background-color: var(--terra-card) !important; }
-.terra-app [class*="bg-[#0c1117"] { background-color: var(--terra-page) !important; }
-.terra-app [class*="bg-[#09090b"] { background-color: #ffffff !important; }
-.terra-app [class*="border-white"] { border-color: var(--terra-border) !important; }
-.terra-app [class*="border-cyan-"] { border-color: #bfdbfe !important; }
-.terra-app [class*="border-emerald-"] { border-color: #bbf7d0 !important; }
-.terra-app [class*="border-rose-"] { border-color: #fecdd3 !important; }
-
-/* Root-level typography scales */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  line-height: 1.25;
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-  font-family: var(--font-display);
-  color: #1d1d1f;
+/* Glass panel hover - subtle engagement state */
+.glass-panel:hover {
+  background: rgba(9, 9, 11, 0.9);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
-h1 { font-size: 2.25rem; }
-h2 { font-size: 1.875rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.25rem; }
-h5 { font-size: 1.125rem; }
-h6 { font-size: 1rem; }
-
-p {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-family: var(--font-body);
-  color: #1d1d1f;
+/* Accent-colored panel */
+.glass-accent {
+  background: rgba(59, 130, 246, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-/* Links */
-a {
-  color: #0066c8;
-  text-decoration: none;
-  -webkit-text-decoration-skip: objects;
+/* Emergency warning panel */
+.glass-warning {
+  background: rgba(245, 158, 11, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-a:hover {
-  color: #0058bd;
-  text-decoration: underline;
+/* Status pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--terra-ink);
+}
+
+/* Status pill with accent background */
+.status-pill-accent {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--terra-accent);
+}
+
+/* Status pulse dot */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
 }
 
 /* ------------------------------------------------------------------ */
-/* Layout                                                            */
+   /* Layout                                                            */
 /* ------------------------------------------------------------------ */
 
 /* Main content area - max width, generous margins */
@@ -156,96 +151,69 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ */
-/* Cards                                                             */
+   /* Panels & Cards                                                     */
 /* ------------------------------------------------------------------ */
 
-/* Minimal card - no glass, no gradients, just clean borders */
+/* Minimal card - clean borders, no excessive rounding */
 .card {
-  background: #ffffff;
-  border: 1px solid #e5e5e7;
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(0, 0, 0, 0.02);
-  transition: box-shadow 0.2s ease;
+  background: rgba(9, 9, 11, 0.5);
+  border: 1px solid var(--terra-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
 }
 
+/* Card hover - subtle engagement */
 .card:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(0, 0, 0, 0.02);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
-.card > :first-child {
-  margin-top: 0;
-}
-
-.card > :last-child {
-  margin-bottom: 0;
-}
-
-/* Minimal section card with header */
+/* Section card with header */
 .section-card {
-  background: #ffffff;
-  border: 1px solid #e5e5e7;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: rgba(9, 9, 11, 0.6);
+  border: 1px solid var(--terra-border);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
   margin-bottom: 1rem;
-}
-
-.section-card .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.section-card .section-title {
-  font-family: var(--font-display-alt);
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1d1d1f;
-}
-
-.section-card .section-count {
-  font-size: 0.875rem;
-  color: #868e96;
-}
-
-/* Minimal alert */
-.alert {
-  background: #fff7e7;
-  border: 1px solid #ffd580;
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  color: #854d0e;
 }
 
 /* ------------------------------------------------------------------ */
-/* Buttons                                                             */
+   /* Buttons                                                             */
 /* ------------------------------------------------------------------ */
 
-/* Primary button - clean and minimal */
+/* Primary button - clean and minimal with accent */
 .btn-primary {
   display: inline-block;
   font-family: var(--font-body);
   font-size: 0.95rem;
   font-weight: 500;
   color: #ffffff;
-  background-color: #0a66c2;
+  background-color: var(--terra-accent);
   border: none;
   border-radius: 8px;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
   align-self: stretch;
 }
 
 .btn-primary:hover {
-  background-color: #0052a8;
+  background-color: #2563eb;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:active {
-  background-color: #004690;
+  background-color: #1d4ed8;
+}
+
+/* Primary button - emergency state */
+.btn-primary-emergency {
+  background-color: var(--terra-accent-emergency);
+}
+
+.btn-primary-emergency:hover {
+  background-color: #dc2626;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 /* Secondary outline button */
@@ -254,51 +222,61 @@ a:hover {
   font-family: var(--font-body);
   font-size: 0.95rem;
   font-weight: 500;
-  color: #1d1d1f;
+  color: var(--terra-ink);
   background: transparent;
-  border: 1px solid #e5e5e7;
+  border: 1px solid var(--terra-border);
   border-radius: 8px;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  align-self: stretch;
 }
 
 .btn-secondary:hover {
-  border-color: #d1d5db;
-  color: #000000;
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--terra-accent);
+  background: rgba(59, 130, 246, 0.04);
 }
 
 .btn-secondary:focus-visible {
-  outline: 2px solid #0066c8;
+  outline: 2px solid var(--terra-accent);
   outline-offset: 2px;
 }
 
-/* Minimal danger button */
+/* Secondary outline - amber */
+.btn-secondary-amber {
+  color: var(--terra-ink);
+}
+
+.btn-secondary-amber:hover {
+  border-color: var(--terra-accent-amber);
+  color: var(--terra-accent-amber);
+  background: rgba(245, 158, 11, 0.04);
+}
+
+/* Danger button */
 .btn-danger {
   display: inline-block;
   font-family: var(--font-body);
   font-size: 0.95rem;
   font-weight: 500;
   color: #ffffff;
-  background-color: #dc2626;
+  background-color: var(--terra-accent-emergency);
   border: none;
   border-radius: 8px;
   padding: 0.5rem 1rem;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
   align-self: stretch;
 }
 
 .btn-danger:hover {
-  background-color: #b91c1c;
-}
-
-.btn-danger:active {
-  background-color: #991b1a;
+  background-color: #dc2626;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 /* ------------------------------------------------------------------ */
-/* Form elements                                                      */
+   /* Form elements                                                       */
 /* ------------------------------------------------------------------ */
 
 /* Input */
@@ -314,10 +292,10 @@ textarea {
   font-family: var(--font-body);
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #1d1d1f;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  color: var(--terra-ink);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--terra-border);
+  border-radius: 6px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -329,8 +307,8 @@ input[type="date"]:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #0066c8;
-  box-shadow: 0 0 0 2px rgba(0, 102, 200, 0.1);
+  border-color: var(--terra-accent);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 select {
@@ -342,14 +320,13 @@ select {
   cursor: pointer;
 }
 
-/* Textarea */
 textarea {
   min-height: 100px;
   resize: vertical;
 }
 
 /* ------------------------------------------------------------------ */
-/* Notifications / Toasts                                              */
+   /* Notifications / Toasts                                              */
 /* ------------------------------------------------------------------ */
 
 /* Notification placeholder */
@@ -365,11 +342,11 @@ textarea {
 
 /* Toast element */
 .toast {
-  background: #ffffff;
-  border: 1px solid #e5e5e7;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--terra-border);
+  border-radius: 8px;
   padding: 0.75rem 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   font-family: var(--font-body);
   font-size: 0.875rem;
   display: flex;
@@ -378,19 +355,19 @@ textarea {
 }
 
 .toast-success {
-  border-left: 3px solid #10b981;
+  border-left: 3px solid var(--terra-accent);
 }
 
 .toast-error {
-  border-left: 3px solid #ef4444;
+  border-left: 3px solid var(--terra-accent-emergency);
 }
 
 .toast-info {
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid var(--terra-accent);
 }
 
 /* ------------------------------------------------------------------ */
-/* Live indicator / pulse (subtle, no gradients)                         */
+   /* Live indicator / pulse (subtle, OLED-safe)                         */
 /* ------------------------------------------------------------------ */
 
 /* Small pulse dot for live updates */
@@ -398,13 +375,13 @@ textarea {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #10b981;
+  background-color: var(--terra-accent);
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+  50% { opacity: 0.6; transform: scale(1.2); }
 }
 
 /* Status badge */
@@ -418,52 +395,53 @@ textarea {
 }
 
 .badge-success {
-  background-color: #d1f7bb;
-  color: #052e31;
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
 }
 
 .badge-warning {
-  background: #fcd34d;
-  color: #1e293b;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--terra-accent-amber);
 }
 
 .badge-error {
-  background: #f87171;
-  color: #ffffff;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--terra-accent-emergency);
 }
 
 .badge-info {
-  background: #bfdbfe;
-  color: #1e40af;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--terra-accent);
 }
 
 /* ------------------------------------------------------------------ */
-/* Live indicator (simple circle, no gradients)                         */
+   /* Live indicator (simple circle, OLED-safe)                         */
 /* ------------------------------------------------------------------ */
 
+/* Status indicator */
 .status-indicator {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.5rem;
-  background: #e2e8f0;
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 9999px;
   font-size: 0.75rem;
-  color: #475569;
+  color: var(--terra-muted);
 }
 
 .status-indicator.success {
-  background: #d1f7bb;
-  color: #052e31;
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
 }
 
 .status-indicator.warning {
-  background: #fcd34d;
-  color: #1e293b;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--terra-accent-amber);
 }
 
 .status-indicator.error {
-  background: #f87171;
-  color: #ffffff;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--terra-accent-emergency);
 }
 
 .status-dot {
@@ -473,71 +451,89 @@ textarea {
   margin-right: 0.25rem;
 }
 
-/* Pulse (very subtle - just opacity) */
+/* Pulse - very subtle opacity */
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
 
 /* ------------------------------------------------------------------ */
-/* Live status chips                                                   */
-/* ------------------------------------------------------------------ */
-
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  background: #f3f4f6;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #475569;
-}
-
-.status-dot-small {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 0.35rem;
-}
-
-/* .success: #10b981, .warning: #f59e3b, .error: #ef4444, .info: #3b82f6 */
-
-/* ------------------------------------------------------------------ */
-/* Typography accents                                                  */
+   /* Typography accents                                                    */
 /* ------------------------------------------------------------------ */
 
 /* Small helpers */
-.text-xs { font-size: 0.75rem; color: #6b7280; }
-.text-sm { font-size: 0.875rem; color: #4b5563; }
+.text-xs { font-size: 0.75rem; color: var(--terra-muted); }
+.text-sm { font-size: 0.875rem; color: var(--terra-muted); }
+.text-base { font-size: 1rem; }
 .text-lg { font-size: 1.125rem; }
 .text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+
+/* Display typography */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+/* Section title - strong hierarchy */
+.section-title {
+  font-family: var(--font-display-alt);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--terra-ink);
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+/* Section eyebrow - subtle label */
+.section-eyebrow {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--terra-muted);
+  margin-bottom: 0.25rem;
+}
+
+/* Reading copy - body text */
+.reading-copy {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--terra-muted);
+}
+
+/* ------------------------------------------------------------------ */
+   /* Divider                                                               */
+/* ------------------------------------------------------------------ */
 
 /* Divider */
 .divider {
   height: 1px;
-  background-color: #e5e5e7;
-  margin: 1.5rem 0;
+  background-color: var(--terra-border);
+  margin: 2rem 0;
 }
 
 /* ------------------------------------------------------------------ */
-/* Responsive                                                          */
+   /* Responsive                                                              */
 /* ------------------------------------------------------------------ */
 
+/* Small helpers */
 @media (max-width: 480px) {
   .main {
     padding: 1rem;
   }
 
-  h1 { font-size: 1.75rem; }
-  h2 { font-size: 1.5rem; }
-  h3 { font-size: 1.25rem; }
+  .section-title { font-size: 1.25rem; }
 }
 
 /* ------------------------------------------------------------------ */
-/* Skip link (accessibility)                                          */
+   /* Skip link (accessibility)                                             */
 /* ------------------------------------------------------------------ */
 
+/* Skip link */
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -553,8 +549,61 @@ textarea {
   top: 0.5rem;
   width: auto;
   height: auto;
-  background: #ffffff;
-  color: #1d1d1f;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--terra-ink);
   padding: 0.5rem;
   border-radius: 0.25rem;
+  border: 1px solid var(--terra-border);
 }
+
+/* ------------------------------------------------------------------ */
+   /* Agent confidence bar                                                    */
+/* ------------------------------------------------------------------ */
+
+/* Confidence segment */
+.segment-bar {
+  display: flex;
+  height: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.segment {
+  flex: 1;
+  height: 100%;
+  background: var(--terra-accent);
+  border-radius: 2px 0 0 2px;
+}
+
+/* Confidence segment - amber */
+.segment-amber {
+  background: var(--terra-accent-amber);
+}
+
+/* Confidence segment - emerald */
+.segment-emerald {
+  background: #10b981;
+}
+
+/* Confidence segment - rose */
+.segment-rose {
+  background: var(--terra-accent-emergency);
+}
+
+/* ------------------------------------------------------------------ */
+   /* Map container adjustments for dark theme                               */
+/* ------------------------------------------------------------------ */
+
+/* Map container - dark surface */
+.map-container {
+  background: rgba(9, 9, 11, 0.5);
+  border: 1px solid var(--terra-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ */
+/* End of Inzora Terra OS - Aerospace Command Centre UI                  */
+/* ------------------------------------------------------------------ */

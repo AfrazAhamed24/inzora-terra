@@ -1,0 +1,56 @@
+
+> inzora-frontend@0.0.1 build
+> vite build
+
+[36mvite v8.1.5 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Γ£ô 2205 modules transformed.
+pwsh : [31mΓ£ù[39m Build failed in 338ms
+At line:1 char:1
++ pwsh -Command "cd 'C:\Users\afraz ahamed k m\Downloads\project cataly ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31mΓ£ù[39m Build failed in 338ms:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31merror during build:
+[31mBuild failed with 1 error:
+
+[plugin vite:css-post]
+SyntaxError: [lightningcss minify] Invalid empty selector
+84 |  }
+85 |  
+86 |  /:global(.dark) .glass-panel {
+   |  ^
+87 |    background: rgba(9, 9, 11, 0.9);
+88 |  }
+    at Module.<anonymous> (C:\Users\afraz ahamed k m\Downloads\project 
+catalyst\frontend\node_modules\lightningcss\node\index.js:56:14)
+    at minifyCSS (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modules/vite/dist/
+node/chunks/node.js:22902:59)
+    at async finalizeCss (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modules/vi
+te/dist/node/chunks/node.js:22747:36)
+    at async Promise.all (index 1)
+    at async Object.run (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modules/vit
+e/dist/node/chunks/node.js:3012:22)
+    at async PluginContextImpl.renderChunk (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/fronte
+nd/node_modules/vite/dist/node/chunks/node.js:22272:19)
+    at async plugin (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modules/rolldow
+n/dist/shared/bindingify-input-options-XPJLJOD0.mjs:1618:16)
+    at async plugin.<computed> (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modu
+les/rolldown/dist/shared/bindingify-input-options-XPJLJOD0.mjs:1959:12)[31m
+    at aggregateBindingErrorsIntoJsError (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend
+/node_modules/rolldown/dist/shared/error-BHRSI0R7.mjs:48:18)
+    at unwrapBindingResult (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modules/
+rolldown/dist/shared/error-BHRSI0R7.mjs:18:128)
+    at #build (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modules/rolldown/dist
+/shared/rolldown-build-CtPvmZgJ.mjs:3276:34)
+    at async buildEnvironment (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modul
+es/vite/dist/node/chunks/node.js:33061:66)
+    at async Object.build (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_modules/v
+ite/dist/node/chunks/node.js:33483:19)
+    at async Object.buildApp (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_module
+s/vite/dist/node/chunks/node.js:33480:153)
+    at async CAC.<anonymous> (file:///C:/Users/afraz%20ahamed%20k%20m/Downloads/project%20catalyst/frontend/node_module
+s/vite/dist/node/cli.js:776:3) {
+  errors: [Getter/Setter]
+}[39m

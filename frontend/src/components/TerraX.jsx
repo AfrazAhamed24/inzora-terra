@@ -1,6 +1,6 @@
 /**
  * TerraX - Local mission query panel.
- * Minimal Apple-design: clean panel, no glassmorphism, no gradients,
+ * Premium dark theme: clean panel, no glassmorphism, no gradients,
  * neutral palette, rule-based logic over mission state.
  */
 
@@ -80,24 +80,24 @@ export default function TerraX({ open = false, onOpenChange }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="w-[21rem] max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl bg-white/5 border border-white/10 shadow-none"
+            className="w-[21rem] max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl glass-panel border border-[#3f444f] bg-[#1e2328] shadow-none"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#3f444f]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Terminal className="w-3.5 h-3.5 text-gray-400" />
+                <div className="w-7 h-7 rounded-lg glass-surface bg-[#1e2328] border border-[#3f444f] flex items-center justify-center">
+                  <Terminal className="w-3.5 h-3.5 text-[#6b728b]" />
                 </div>
                 <div>
-                  <div className="text-sm font-display font-semibold tracking-[0.08em] text-gray-200">Mission Query</div>
-                  <div className="text-[10px] font-display font-medium tracking-[0.14em] text-gray-500/60">
+                  <div className="text-sm font-display font-semibold tracking-[0.08em] text-[#6b728b]">Mission Query</div>
+                  <div className="text-[8px] font-display font-medium tracking-[0.14em] text-[#6b728b]/60">
                     Local query mode · rule-based
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => onOpenChange?.(false)}
-                className="p-1.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white/70 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[#1e2328] hover:text-[#cfe7ff] transition-colors"
                 aria-label="Close local mission query panel"
               >
                 <X className="w-3.5 h-3.5" />
@@ -111,7 +111,7 @@ export default function TerraX({ open = false, onOpenChange }) {
                   key={item.label}
                   onClick={() => send(item.query)}
                   disabled={typing}
-                  className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-display text-[10px] font-medium tracking-[0.1em] text-gray-500 transition-colors hover:border-white/20 hover:text-gray-200 disabled:opacity-40"
+                  className="rounded-full border border-[#3f444f] bg-[#1e2328] px-2.5 py-1 font-display text-[9px] font-medium tracking-[0.1em] text-[#6b728b] transition-colors hover:border-[#3b82f6] hover:text-[#3b82f6] disabled:opacity-40"
                 >
                   {item.label}
                 </button>
@@ -122,8 +122,8 @@ export default function TerraX({ open = false, onOpenChange }) {
             <div aria-live="polite" aria-atomic="false" className="px-3 py-3 h-48 overflow-y-auto space-y-2">
               {messages.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center gap-2">
-                  <Sparkles className="w-3 h-3 text-gray-500/30" />
-                  <p className="text-xs text-gray-400/50 leading-[1.7] max-w-[14rem]">
+                  <Sparkles className="w-3 h-3 text-[#6b728b]/30" />
+                  <p className="text-xs text-[#6b728b]/50 leading-[1.7] max-w-[14rem]">
                     Quick answers from available mission state. Tap a chip or ask about risk,
                     victims, resources, sensors, or current status.
                   </p>
@@ -132,25 +132,25 @@ export default function TerraX({ open = false, onOpenChange }) {
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[85%] px-2.5 py-1.5 rounded-xl ${
+                    className={`max-w-[85%] px-2.5 py-1.5 rounded-xl glass-surface border border-[#3f444f] ${
                       msg.role === 'user'
-                        ? 'bg-white/5 border border-white/10'
-                        : 'bg-white/5 border border-white/10'}
+                        ? 'bg-[#1e2328]'
+                        : 'bg-[#1e2328]'}
                     }`}
                   >
-                    {msg.agent && <div className="mb-0.5 text-[9px] font-display font-semibold tracking-[0.14em] text-gray-400/60">{msg.agent}</div>}
-                    <p className="text-[12px] leading-[1.6] text-gray-300">{msg.content}</p>
+                    {msg.agent && <div className="mb-0.5 text-[8px] font-display font-semibold tracking-[0.14em] text-[#6b728b]/60">{msg.agent}</div>}
+                    <p className="text-[9px] leading-[1.6] text-[#a3a6af]">{msg.content}</p>
                   </div>
                 </div>
               ))}
               {typing && (
                 <div className="flex justify-start">
-                  <div className="px-2 py-1 rounded bg-white/5 border border-white/10">
+                  <div className="px-2 py-1 rounded glass-surface border border-[#3f444f]">
                     <div className="flex gap-0.5">
                       {[0, 1, 2].map((i) => (
                         <div
                           key={i}
-                          className="w-0.5 h-0.5 rounded-full bg-white/30"
+                          className="w-0.5 h-0.5 rounded-full bg-[#1e2328]"
                         />
                       ))}
                     </div>
@@ -169,20 +169,19 @@ export default function TerraX({ open = false, onOpenChange }) {
                   onKeyDown={(e) => e.key === 'Enter' && send(input)}
                   placeholder="Ask about the mission…"
                   aria-label="Ask about the mission"
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[9px] text-gray-400 outline-none placeholder:text-gray-500/50 focus:border-white/20 transition-colors"
+                  className="flex-1 glass-surface border border-[#3f444f] rounded-lg px-2 py-1.5 text-[8px] text-[#5b6078] outline-none placeholder:text-[#6b728b]/50 focus:border-[#3b82f6] transition-colors"
                 />
                 <button
                   onClick={() => send(input)}
                   disabled={!input.trim() || typing}
-                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 transition-colors disabled:opacity-40 disabled:hover:bg-white/10"
-                  aria-label="Send"
+                  className="p-1.5 rounded-lg glass-surface border border-[#3f444f] text-[#6b728b] hover:bg-[#1e2328] transition-colors disabled:opacity-40 disabled:hover:bg-[#1e2328]"
                 >
                   <Send className="w-2.5 h-2.5" />
                 </button>
               </div>
               {latest && (
-                <div className="mt-1 text-[9px] font-display font-medium tracking-[0.12em] text-gray-400/50 flex items-center gap-1">
-                  <span className="w-0.5 h-0.5 rounded-full bg-white/20" />
+                <div className="mt-1 text-[7px] font-display font-medium tracking-[0.12em] text-[#6b728b]/50 flex items-center gap-1">
+                  <span className="w-0.5 h-0.5 rounded-full bg-[#1e2328]" />
                   Local response · not the backend assistant endpoint
                 </div>
               )}
@@ -200,7 +199,7 @@ export default function TerraX({ open = false, onOpenChange }) {
         aria-expanded={open}
         aria-controls="terra-x-panel"
         aria-label={open ? 'Close local query panel' : 'Open local query panel'}
-        className="flex items-center gap-1.5 pl-2 py-1.5 rounded-full border border-white/10 transition-all duration-300 text-[9px] font-display font-medium uppercase tracking-[0.1em] text-gray-500 hover:border-white/20 hover:text-gray-300"
+        className="flex items-center gap-1.5 pl-2 py-1.5 rounded-full border border-[#3f444f] transition-all duration-300 text-[8px] font-display font-medium uppercase tracking-[0.1em] text-[#6b728b] hover:border-[#3b82f6] hover:text-[#3b82f6]"
       >
         <div className="w-4 h-4 rounded-full flex items-center justify-center">
           <Terminal className="w-2.5 h-2.5" />
