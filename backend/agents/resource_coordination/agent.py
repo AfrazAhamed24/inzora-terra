@@ -38,6 +38,13 @@ class EnhancedResourceCoordinationAgent(BaseAgent):
             self._router = get_router()
         return self._router
 
+    async def perceive(self, gop: TERRAState) -> Dict[str, Any]:
+        return {
+            "risk_report": gop.risk_report or {},
+            "victim_map": gop.victim_map or {},
+            "tasks": gop.tasks,
+        }
+
     async def reason(self, perception: Dict[str, Any], gop: TERRAState) -> Dict[str, Any]:
         risk = perception.get("risk_report", {})
         victims = perception.get("victim_map", {})

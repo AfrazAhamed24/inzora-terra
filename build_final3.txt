@@ -1,0 +1,31 @@
+
+> inzora-frontend@0.0.1 build
+> vite build
+
+[36mvite v8.1.5 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Γ£ô 2205 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                  1.08 kB Γöé gzip:   0.51 kB
+dist/assets/maplibre-gl-worker-VaXr2Fck.mjs    508.31 kB
+dist/assets/index-BoyEn_sO.css                  65.22 kB Γöé gzip:  12.13 kB
+dist/assets/maplibre-B8-mEBLf.css               82.96 kB Γöé gzip:  10.72 kB
+dist/assets/rolldown-runtime-CNC7AqOf.js         0.87 kB Γöé gzip:   0.50 kB
+dist/assets/react-vendor-BqcZOtKZ.js           189.63 kB Γöé gzip:  59.65 kB
+dist/assets/index-pvrsxAz5.js                  289.18 kB Γöé gzip:  85.98 kB
+dist/assets/maplibre-vQCqy3tu.js             1,048.40 kB Γöé gzip: 283.51 kB
+
+[32mΓ£ô built in 496ms[39m
+pwsh : [33m[plugin builtin:vite-reporter] 
+At line:1 char:1
++ pwsh -Command "cd 'C:\Users\afraz ahamed k m\Downloads\project cataly ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([33m[plugin builtin:vite-reporter] :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: 
+https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
